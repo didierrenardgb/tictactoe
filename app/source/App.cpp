@@ -1,13 +1,16 @@
 #include "App.h"
 
+#include <stdio.h>
+
+#include "Configuration.h"
 #include "Competition.h"
 #include "CompetitionRunner.h"
 #include "MatchWindow.h"
-#include "PlayerExample.h"
 #include "Schedule.h"
 #include "ScheduleWindow.h"
 #include "Standing.h"
 #include "StandingsWindow.h"
+#include "PlayerListing.h"
 
 namespace ttt
 {
@@ -15,7 +18,7 @@ namespace ttt
 App::App(std::chrono::milliseconds&& updateInterval, ImVec4&& clearColor):
 mCompetition(std::make_unique<Competition>())
 , mClearColor(std::forward<ImVec4>(clearColor))
-, mWindow("TicTacToe")
+, mWindow("TicTacToe", mainWindowGeometry())
 {
 	mCompetitionRunner = std::make_unique<CompetitionRunner>(*mCompetition, std::forward<std::chrono::milliseconds>(updateInterval));
 }
@@ -29,13 +32,15 @@ int App::run()
         return 1;
     }
 
-    mCompetition->addPlayer(std::make_unique<ttt::PlayerExample>("Player1"));
-    mCompetition->addPlayer(std::make_unique<ttt::PlayerExample>("Player2"));
-    mCompetition->addPlayer(std::make_unique<ttt::PlayerExample>("Player3"));
-    mCompetition->addPlayer(std::make_unique<ttt::PlayerExample>("Player4"));
-    mCompetition->start();
-
-    mWindow.mainLoop(mClearColor);
+    setupPlayers(mCompetition);
+    if (mCompetition->start())
+    {
+        mWindow.mainLoop(mClearColor);
+    }
+    else
+    {
+        printf("ERROR: Not enough players on the competition\n");
+    }
     mWindow.end();
 
     return 0;

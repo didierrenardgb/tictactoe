@@ -17,7 +17,7 @@ public:
 	void draw() const override;
 
 private:
-	std::vector<ttt::Standing> const& mStandings;
+	std::vector<ttt::Standing> mStandings;
 };
 
 } // namespace ttt

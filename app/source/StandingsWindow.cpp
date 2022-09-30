@@ -2,6 +2,7 @@
 
 #include "imgui.h"
 
+#include "Configuration.h"
 #include "Standing.h"
 #include "IPlayer.h"
 
@@ -12,12 +13,16 @@ static char const* const kStandingsHeaderLabels[]{ "Pos", "Name", "P", "Pld", "W
 static char const* const kStandingNumberFormat = "%d";
 
 StandingsWindow::StandingsWindow(std::vector<ttt::Standing> const& standings):
-	mStandings(standings)
+    mStandings(standings)
 {
 }
 
 void StandingsWindow::draw() const
 {
+    WindowGeometry mainGeometry = mainWindowGeometry();
+
+    ImGui::SetNextWindowPos({ static_cast<float>(mainGeometry.width / 2), static_cast<float>(mainGeometry.height / 2) }, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize({ static_cast<float>(mainGeometry.width / 2), static_cast<float>(mainGeometry.height / 2) }, ImGuiCond_FirstUseEver);
     ImGui::Begin("Standings");
     if (ImGui::BeginTable("StandingsTable", 7))
     {

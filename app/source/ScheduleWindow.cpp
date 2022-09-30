@@ -4,6 +4,7 @@
 
 #include "imgui.h"
 
+#include "Configuration.h"
 #include "Fixture.h"
 #include "Match.h"
 #include "MatchWidget.h"
@@ -20,6 +21,10 @@ ScheduleWindow::ScheduleWindow(Schedule const& schedule):
 void ScheduleWindow::draw() const
 {
     int currentFixture = 1;
+    WindowGeometry mainGeometry = mainWindowGeometry();
+
+    ImGui::SetNextWindowPos({ 0, static_cast<float>(mainGeometry.height / 2) }, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize({ static_cast<float>(mainGeometry.width / 2), static_cast<float>(mainGeometry.height / 2) }, ImGuiCond_FirstUseEver);
     ImGui::Begin("Schedule");
     std::string ongoingMatchTitle;
 

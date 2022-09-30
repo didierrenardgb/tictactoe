@@ -23,7 +23,10 @@ void Competition::addPlayer(std::unique_ptr<IPlayer>&& player)
 
 std::unique_ptr<Schedule> const& Competition::start()
 {
-	mSchedule = ScheduleBuilderRoundRobin(Board()).build(mPlayers);
+    if (mPlayers.size() >= 2)
+    {
+        mSchedule = ScheduleBuilderRoundRobin(Board()).build(mPlayers);
+    }
 	return mSchedule;
 }
 
