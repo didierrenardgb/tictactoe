@@ -28,10 +28,12 @@ namespace ttt
 		};
 		
 
-		
+		int** copyboard(Board const& board) const;
+		bool willwin(int currentplayer, int** const& board, int width, int height, int wincon) const;
+		int** evaluateboard(int** const& board, int width, int height, int wincon) const;
 
-		Coordinates finish_off(Board const& board) const;
-		Coordinates defend(Board const& board) const;
+		Coordinates finish_off(Board const& board, Coordinates excpt={-1,-1}) const;
+		Coordinates defend(Board const& board, Coordinates excpt = { -1,-1 }) const;
 		Coordinates fork(Board const& board) const;
 		Coordinates de_fork(Board const& board) const;
 		next_move strategize(int dephth, Board const& board) const;
