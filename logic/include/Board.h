@@ -26,7 +26,7 @@ public:
 	bool play(IPlayer const& player, Coordinates const& at);
 	bool filled() const;
 	bool empty() const;
-
+	
 private:
 	struct Impl;
 	std::unique_ptr<Impl> mImpl;

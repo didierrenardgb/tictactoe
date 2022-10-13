@@ -16,5 +16,5 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY bin/${GENERATOR_NAME}/)
 
 include_directories(${include_dirs})
 
-add_library(${PROJECT_NAME} ${src_files} ${header_files})
+add_library(${PROJECT_NAME} ${src_files} ${header_files} "include/PlayerFranL.h" "source/PlayerFranL.cpp")
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
