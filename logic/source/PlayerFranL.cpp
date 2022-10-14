@@ -26,6 +26,7 @@ namespace ttt
 
 	//Scan the array of -1s, 0s and 1s, if there is a winning move, returns its coordinates
 	//If no such move exists, returns {-1,-1} instead
+	//Optionally accepts a Coordinate to ignore (important for fork detection)
 	Coordinates PlayerFranL::finish_off_array(int** board, int const height, int const width, int const winCondition, Coordinates const& excpt) const {
 		for (int i = 0; i < width; i++)
 		{
@@ -50,6 +51,7 @@ namespace ttt
 	}
 	//Scan the array of -1s, 0s and 1s, if there is a winning move for the opponent, returns its coordinates
 	//If no such move exists, returns {-1,-1} instead
+	//Optionally accepts a Coordinate to ignore (important for fork detection)
 	Coordinates PlayerFranL::defend_array(int** board, int const height, int const width, int const winCondition, Coordinates const& excpt) const {
 		for (int i = 0; i < width; i++)
 		{
