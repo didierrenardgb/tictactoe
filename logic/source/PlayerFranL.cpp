@@ -25,6 +25,7 @@ namespace ttt
 	}
 
 	//Scan the array of -1s, 0s and 1s, if there is a winning move, returns its coordinates
+	//If no such move exists, returns {-1,-1} instead
 	Coordinates PlayerFranL::finish_off_array(int** board, int const height, int const width, int const winCondition, Coordinates const& excpt) const {
 		for (int i = 0; i < width; i++)
 		{
@@ -48,6 +49,7 @@ namespace ttt
 		return { -1,-1 };
 	}
 	//Scan the array of -1s, 0s and 1s, if there is a winning move for the opponent, returns its coordinates
+	//If no such move exists, returns {-1,-1} instead
 	Coordinates PlayerFranL::defend_array(int** board, int const height, int const width, int const winCondition, Coordinates const& excpt) const {
 		for (int i = 0; i < width; i++)
 		{
@@ -72,6 +74,7 @@ namespace ttt
 	}
 
 	//Take a board from the competition, make a simplified copy to analyze. If there's a winning move, returns its coordinates. 
+	//If no such move exists, returns {-1,-1} instead
 	//Optionally accepts a Coordinate to ignore (important for fork detection)
 	Coordinates PlayerFranL::finish_off(Board const& board, Coordinates const& excpt) const{
 		auto testboard = copyboard(board);
@@ -80,6 +83,7 @@ namespace ttt
 	}
 
 	//Take a board from the competition, make a simplified copy to analyze. If there's a move  that results in victory for the opponent, returns its coordinates.
+	//If no such move exists, returns {-1,-1} instead
 	//Optionally accepts a Coordinate to ignore (important for fork detection)
 	Coordinates PlayerFranL::defend(Board const& board, Coordinates const& excpt) const{
 		auto testboard = copyboard(board);
@@ -89,6 +93,7 @@ namespace ttt
 
 	//Take a board from the competition, make a simplified copy to analyze.
 	//If there's a move that is guaranteed to win next turn, returns its coordinates.
+	//If no such move exists, returns {-1,-1} instead
 	Coordinates PlayerFranL::fork(Board const& board) const{
 		auto tempboard = copyboard(board);
 		Coordinates coords;
@@ -119,6 +124,7 @@ namespace ttt
 
 	//Take a board from the competition, make a simplified copy to analyze.
 	//If there's a move that if taken by the opponent guarantees an opponent victory next turn, returns its coordinates.
+	//If no such move exists, returns {-1,-1} instead
 	Coordinates PlayerFranL::de_fork(Board const& board) const{
 		auto tempboard = copyboard(board);
 		Coordinates coords;
