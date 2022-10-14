@@ -39,6 +39,15 @@ public:
 
 private:
 	std::string mName;
+	int maxDepth = 9; //Check about this.
+	int pointsForWin = 9; //Temporal
+
+	//Methods
+	Coordinates minimax(Board const& board);
+	const int minimize(Board const& board, int row, int column, int depth);
+	const int maximize(Board const& board, int row, int column, int depth);
+	const int evaluate(int row, int column);
+
 };
 
 } // namespace ttt
