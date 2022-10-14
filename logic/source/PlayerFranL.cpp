@@ -24,47 +24,21 @@ namespace ttt
 		return mName;
 	}
 
-
-	Coordinates PlayerFranL::finish_off(Board const& board, Coordinates excpt) const{
-		auto testboard = copyboard(board);
-		for (int i = 0; i < board.width(); i++)
+	Coordinates PlayerFranL::finish_off_array(int** board, int const height, int const width, int const winCondition, Coordinates const& excpt) const {
+		for (int i = 0; i < width; i++)
 		{
-			for (int j = 0; j < board.height(); j++)
+			for (int j = 0; j < height; j++)
 			{
 				if (i != excpt.x && j != excpt.y)
 				{
 
-				if (testboard[i][j] == 0){
-					testboard[i][j] = 1;
-					if (willwin(1, testboard, board.width(), board.height(), board.winCondition()))
-					{
-						return { i,j };
-					}
-					testboard[i][j] = 0;
-
-				}
-				}
-			}
-		}
-		return { -1,-1 };
-	}
-
-	Coordinates PlayerFranL::defend(Board const& board, Coordinates excpt) const{
-		auto testboard = copyboard(board);
-		for (int i = 0; i < board.width(); i++)
-		{
-			for (int j = 0; j < board.height(); j++)
-			{
-				if (i != excpt.x && j != excpt.y)
-				{
-
-					if (testboard[i][j] == 0) {
-						testboard[i][j] = 1;
-						if (willwin(-1, testboard, board.width(), board.height(), board.winCondition()))
+					if (board[i][j] == 0) {
+						board[i][j] = 1;
+						if (willwin(1, board, width, height, winCondition))
 						{
 							return { i,j };
 						}
-						testboard[i][j] = 0;
+						board[i][j] = 0;
 
 					}
 				}
@@ -73,38 +47,116 @@ namespace ttt
 		return { -1,-1 };
 	}
 
+	Coordinates PlayerFranL::defend_array(int** board, int const height, int const width, int const winCondition, Coordinates const& excpt) const {
+		for (int i = 0; i < width; i++)
+		{
+			for (int j = 0; j < height; j++)
+			{
+				if (i != excpt.x && j != excpt.y)
+				{
+
+					if (board[i][j] == 0) {
+						board[i][j] = 1;
+						if (willwin(-1, board, width, height, winCondition))
+						{
+							return { i,j };
+						}
+						board[i][j] = 0;
+
+					}
+				}
+			}
+		}
+		return { -1,-1 };
+	}
+
+
+	Coordinates PlayerFranL::finish_off(Board const& board, Coordinates const& excpt) const{
+		auto testboard = copyboard(board);
+		
+		return finish_off_array(testboard, board.height(), board.width(), board.winCondition(), excpt);
+	}
+
+	Coordinates PlayerFranL::defend(Board const& board, Coordinates const& excpt) const{
+		auto testboard = copyboard(board);
+		return defend_array(testboard, board.height(), board.width(), board.winCondition(), excpt);
+	}
+
 	Coordinates PlayerFranL::fork(Board const& board) const{
-		Board tempboard = board;
+		auto tempboard = copyboard(board);
+		Coordinates coords;
 		for (int i = 0; i < board.width(); i++)
 		{
 			for (int j = 0; j < board.height(); j++)
 			{
-				
+				if (tempboard[i][j] == 0) {
+					tempboard[i][j] = 1;
+
+					coords = finish_off_array(tempboard, board.height(), board.width(), board.winCondition());
+					if (coords.x != -1)
+					{
+						coords = finish_off_array(tempboard, board.height(), board.width(), board.winCondition(),coords);
+						if (coords.x != -1)
+						{
+							return { i,j };
+						}
+					}
+					
+					tempboard[i][j] = 0;
+
+				}
 			}
 		}
 		return { -1,-1 };
 	}
 
 	Coordinates PlayerFranL::de_fork(Board const& board) const{
+		auto tempboard = copyboard(board);
+		Coordinates coords;
 		for (int i = 0; i < board.width(); i++)
 		{
 			for (int j = 0; j < board.height(); j++)
 			{
-				return { 0,0 };
+				if (tempboard[i][j] == 0) {
+					tempboard[i][j] = 1;
+
+					coords = defend_array(tempboard, board.height(), board.width(), board.winCondition());
+					if (coords.x != -1)
+					{
+						coords = defend_array(tempboard, board.height(), board.width(), board.winCondition(), coords);
+						if (coords.x != -1)
+						{
+							return { i,j };
+						}
+					}
+
+					tempboard[i][j] = 0;
+
+				}
 			}
 		}
+		return { -1,-1 };
 	}
 
 	PlayerFranL::next_move PlayerFranL::strategize(int depth, Board const& board) const {
-		return { -1,{0,0} };
+		if (board.valid())
+		{
+			Coordinates coords = { std::rand() % board.width(), std::rand() % board.height() };
+			while ((board.tile(coords) == nullptr) || board.tile(coords)->owner().has_value())
+			{
+				coords = { std::rand() % board.width(), std::rand() % board.height() };
+			}
+			return { 100,coords };
+		}
+
+		return { 0, 0 };
 	}
 
 	Coordinates PlayerFranL::play(Board const& board) const
 	{
 		if (board.valid())
 		{
-			PlayerExample player("test");
-			return player.play(board);
+			
 
 			Coordinates coords = finish_off(board);
 			if (coords.x != (-1))
@@ -137,8 +189,7 @@ namespace ttt
 
 	int** PlayerFranL::copyboard(Board const& board) const {
 		//Me cuesta trabajar sobre una copia del board, asi que hago una copia tonta yo, de nuevo, no me parece muy elegante.
-		int** array = 0;
-		array = new int* [board.height()];
+		int** array = new int* [board.height()];
 		for (int i = 0; i < board.height(); i++)
 		{
 			array[i] = new int[board.width()];
@@ -179,22 +230,22 @@ namespace ttt
 				{
 					auto const& prev = board[x][y];
 
-					if (prev==board[x + w][y] && prev==currentplayer)
+					if (x+w<height && prev==board[x + w][y] && prev==currentplayer)
 					{
 						horizontal++;
 					}
 
-					if (prev == board[x][y+w] && prev == currentplayer)
+					if (y + w < width && prev == board[x][y+w] && prev == currentplayer)
 					{
 						vertical++;
 					}
 
-					if (prev == board[x + w][y+w] && prev == currentplayer)
+					if (y + w < width && x + w < height && prev == board[x + w][y+w] && prev == currentplayer)
 					{
 						diagonal++;
 					}
 
-					if (prev == board[x - w][y+w] && prev == currentplayer)
+					if (y + w < width && x - w > 0 && prev == board[x - w][y+w] && prev == currentplayer)
 					{
 						diagonal2++;
 					}
