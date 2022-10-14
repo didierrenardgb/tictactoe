@@ -201,10 +201,6 @@ namespace ttt
 			if (coords.x != (-1))
 				return coords;
 
-			coords = finish_off(board);
-			if (coords.x != (-1))
-				return coords;
-
 			coords = defend(board);
 			if (coords.x != (-1))
 				return coords;
