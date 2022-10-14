@@ -225,7 +225,7 @@ namespace ttt
 		return array;
 	}
 
-	//Check if player currentplayer will win with a move in the current boardstate, returns true if a winning move exists, false otherwise.
+	//Check if player currentplayer will win in the current boardstate, returns true if currentplayer has won in board, false otherwise.
 	bool PlayerFranL::willwin(int currentplayer, int** const& board,int width, int height, int wincon) const {
 
 		//Funcion copiada y modificada de Match, tiene que haber una mejor forma de hacer esto ;_;
