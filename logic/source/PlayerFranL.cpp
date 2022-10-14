@@ -78,7 +78,7 @@ namespace ttt
 		return finish_off_array(testboard, board.height(), board.width(), board.winCondition(), excpt);
 	}
 
-	//Take a board from the competition, make a simplified copy to analyze. If there's a winning move for the opponent, take it instead.
+	//Take a board from the competition, make a simplified copy to analyze. If there's a move  that results in victory for the opponent, take it instead.
 	//Optionally accepts a Coordinate to ignore (important for fork detection)
 	Coordinates PlayerFranL::defend(Board const& board, Coordinates const& excpt) const{
 		auto testboard = copyboard(board);
@@ -117,7 +117,7 @@ namespace ttt
 	}
 
 	//Take a board from the competition, make a simplified copy to analyze.
-	//If there's a move that guarantees an opponent victory next turn, take it instead.
+	//If there's a move that if taken by the opponent guarantees an opponent victory next turn, take it instead.
 	Coordinates PlayerFranL::de_fork(Board const& board) const{
 		auto tempboard = copyboard(board);
 		Coordinates coords;
