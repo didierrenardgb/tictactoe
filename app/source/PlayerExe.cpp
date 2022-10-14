@@ -13,24 +13,28 @@ namespace ttt
 		return { std::rand() % board.width(), std::rand() % board.height() };
 	}
 
-
-	static Coordinates play(Board const& board, int ** boardManagement) 
+	static void printBoardState(Board const& board,int ** boardManagement)
 	{
-		if (board.valid())                                                                   
-		{
-			std::cout<<"KLASJFLKASJLFKASJFKLASKFJASKF"<<std::endl;
-			for (int i = 0 ; i < board.width() ; i++){
-				for (int j = 0 ; j < board.height() ; j++){
-					std::cout<<boardManagement[i][j]<<" | ";
-				}
-				std::cout<<std::endl;
+		for (int i = 0 ; i < board.height() ; i++){
+			for (int j = 0 ; j < board.width() ; j++){
+				std::cout<<boardManagement[j][i]<<" | ";
 			}
 			std::cout<<std::endl;
-			std::cout<<std::endl;
-			std::cout<<std::endl;
+		}
+		std::cout<<std::endl;
+		std::cout<<std::endl;
+		std::cout<<std::endl;
+	}
 
 
-
+	static Coordinates play(Board const& board, int ** boardManagement, std::string name) 
+	{
+		//std::cout<<"Nueva Build"<<std::endl;
+		
+		
+		if (board.valid())                                                                   
+		{
+			printBoardState(board,boardManagement);
 			Coordinates coords = randomCoordinate(board);
 			while ((board.tile(coords) == nullptr) || board.tile(coords)->owner().has_value())
 			{
@@ -44,14 +48,16 @@ namespace ttt
 
 
 
-	//semantica del tablero:
+//Board Management: Hacemos la captura de la matriz de juego en su estado actual.
+//De esta forma, para el algormitmo implementado, podemos trabajar con una copia de la matriz con una abstraccion semantica distinta a la desplegada en el menu.
+	
+//semantica del tablero:
+	//1 --> Jugador actual.
+	//0 --> No lo tiene nadie.
+	//2 --> Jugador contrincante.
+	
 
-		//1 --> Jugador actual.
-		//0 --> No lo tiene nadie.
-		//2 --> Jugador contrincante.
-	
-	
-	
+
 	static int** initializeAlphaBeta(Board const& board, std::string const& name)
 	{
 		int  ** boardManagement = new int *[board.width()];
@@ -74,10 +80,7 @@ namespace ttt
 
 			}
 		}
-
 		return boardManagement;
-
-
 	}
 
 	
@@ -97,8 +100,8 @@ namespace ttt
 
 	Coordinates PlayerExe::play(Board const& board) const
 	{
-		int  ** boardManagement = ttt::initializeAlphaBeta(board,name());
-		return ttt::play(board,boardManagement);
+		int  ** boardManagement = ttt::initializeAlphaBeta(board,name()); //En este momento hacemos la captura de la matriz actual.
+		return ttt::play(board,boardManagement,name());
 	}
 
 
