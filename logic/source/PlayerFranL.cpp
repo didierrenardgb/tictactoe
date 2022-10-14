@@ -157,7 +157,29 @@ namespace ttt
 	PlayerFranL::next_move PlayerFranL::strategize(int depth, Board const& board) const {
 		if (board.valid())
 		{
-			Coordinates coords = { std::rand() % board.width(), std::rand() % board.height() };
+			//Adding small temporary aggressor function (if a move sets up a possible -not guaranteed- victory next move, return that) while working on recursivity.
+			auto tempboard = copyboard(board);
+			Coordinates coords;
+			for (int i = 0; i < board.width(); i++)
+			{
+				for (int j = 0; j < board.height(); j++)
+				{
+					if (tempboard[i][j] == 0) {
+						tempboard[i][j] = 1;
+
+						coords = finish_off_array(tempboard, board.height(), board.width(), board.winCondition());
+						if (coords.x != -1)
+						{
+							return { 100,{ i,j } };
+						}
+
+						tempboard[i][j] = 0;
+
+					}
+				}
+			}
+
+			coords = { std::rand() % board.width(), std::rand() % board.height() };
 			while ((board.tile(coords) == nullptr) || board.tile(coords)->owner().has_value())
 			{
 				coords = { std::rand() % board.width(), std::rand() % board.height() };
