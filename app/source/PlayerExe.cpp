@@ -15,8 +15,9 @@ namespace ttt
 		return { std::rand() % board.width(), std::rand() % board.height() };
 	}
 
-	static void printBoardState(Board const& board,int ** boardManagement) //Imprime el estado del tablero semántico.
-	{
+
+	//Prints the current state of the board
+	static void printBoardState(Board const& board,int ** boardManagement){
 		std::cout<<"BUILD"<<std::endl;
 		for (int i = 0 ; i < board.width() ; i++){
 			for (int j = 0 ; j < board.height() ; j++){
@@ -38,9 +39,9 @@ namespace ttt
 
 	}
 
+//// The board is passed as a parameter to know its dimensions. Thanks to that i can use pointer notations in a simplified way, knowing the dimensions of the structure.
 
-	//Paso el board como parametro para conocer las dimensiones del mismo. De esta forma, puedo usar notaciones de punteros de una manera simplificada sabiendo
-	//de antemano las dimensiones de la estructura.
+
 
 
 	static std::vector<Coordinates> getMovs(Board const& board,int ** boardManagement) //Obtenemos todos los posibles movimientos a realizar del tablero.
@@ -58,10 +59,11 @@ namespace ttt
 	}
 
 
-	//Si gano el jugador, devuelvo 10
-	//Si gano el contrincante, devuelvo -10.
-	//Si hubo empate, devuelvo 0.
-	//Si no termino aun, devuelvo dependiendo la heuristica de las fichas.
+//The semantics of the values ​​to obtain
+	//If the game isn't over, it will return 5.
+	//If the actual player wins, the function will return the value 10.
+	//If the actual player looses, the function will return the value -10.
+	//If there is a tie, it will return 0.
 
 	static int calculateValue(Board const& board, int ** boardManagement, int gameOverStatus, bool isActualPlayer)
 	{
@@ -88,15 +90,17 @@ namespace ttt
 		return heuristicValue;
 	}
 
-	//Si se tiene que seguir jugando, retorna 0.
-	//Si gano el jugador, retorna 1.
-	//Si gano el rival, retorna 2.
-	//Si hubo empate, retorna 3.
+
+//The semantics of the values ​​to obtain
+	//If the game isn't over, it will return 0.
+	//If the actual player wins, the function will return the value 1.
+	//If the actual player looses, the function will return the value 2.
+	//If there is a tie, it will return 3.
 
 	static int gameOver(Board const& board, int ** boardManagement)
 	{
 
-		bool fullBoard = true; //Supongo que el tablero esta completo.
+		bool fullBoard = true; //We asume the Tie Game Over.
 		int width = board.width();
 		int height = board.height();
 		for (int i = 0 ; i < width ; i++ )
@@ -125,40 +129,44 @@ namespace ttt
 			}
 		
 		}
-		if (fullBoard){ //Si todas al menos una ficha sin colocar, esto dará falso. En caso que todas hayan estado ocupadas, se llego a un empate.
-			return 3;
+		if (fullBoard){ 
+			return 3; //If there is, at least, one tile empty, the game will be not over yet. 
 		}else{
-			return 0;
+			return 0; //In this case, we get a Tie Game Over.
 		}
 	}
 
 
 	static int minimax(int depth, int alpha, int beta, bool actualPlayer, Board const& board, int ** boardManagement)
 	{
-		/*std::string mess;
-		if (actualPlayer)
-				mess = "JUGADOR ACTUAL";
-			else
-				mess ="JUGADOR RIVAL";
-
-		std::cout<<"NIVEL MINIMAX: "<<depth<<" , VALOR ALPHA: "<<alpha<<" VALOR BETA: "<<beta<<" , ESTA JUGANDO: "<<mess<<" Y EL TABLERO ESTA AHORA: "<<std::endl;
-		printBoardState(board,boardManagement);
-		*/
-
-
 		std::vector<Coordinates> movs = getMovs(board,boardManagement);
 		bool pruning =false;
 		int gameOverValue = gameOver(board,boardManagement);
 		if ((depth == 0) || gameOverValue>0){
-			if (depth==0)
+			//Prints messages for the case that we need to follow the algorithm.
+
+			/*if (depth==0)
 					std::cout<<"Profundidad máxima alcanzada.";
 				else
-					std::cout<<"HUBO GAME OVER"<<std::endl;
+				{
+					switch (gameOverValue)
+					{
+						case 1:
+							std::cout<<"Game Over, victoria predictiva del jugador actual."<<std::endl;
+						break;
+						case 2:
+							std::cout<<"Game Over, derrota predictiva del jugador actual."<<std::endl;
+						break;
+						default:
+							std::cout<<"Game Over, los jugadores han empadato."<<std::endl;
+						break;
+					}
+				}
+				*/
 			return calculateValue(board,boardManagement,gameOverValue,actualPlayer);
-
 		}
 		else{
-			std::vector<Coordinates> movs = getMovs(board,boardManagement);
+			std::vector<Coordinates> movs = getMovs(board,boardManagement); //We get all the available movements in the board.
 			
 			if (actualPlayer)
 			{
@@ -166,17 +174,14 @@ namespace ttt
 				for (Coordinates candidate : movs){ 
 					if (!pruning)
 					{
-						executeMovement(boardManagement,candidate,actualPlayer);
-						value = std::max(value,minimax(depth,alpha,beta,!actualPlayer,board,boardManagement));
+						executeMovement(boardManagement,candidate,actualPlayer); //we execute the movement.
+						value = std::max(value,minimax(depth,alpha,beta,!actualPlayer,board,boardManagement)); //we search the maximun value for the current player.
 						alpha = std::max(alpha,value);
-						if (alpha>=beta){
-							std::cout<<"Prouding..."<<std::endl;
-							pruning = true;
+						if (alpha>=beta){ //if we already found a better movement.
+							pruning = true; //we dont need to keep analizing more posible states in this branch.
 						}
-						boardManagement[candidate.x][candidate.y] = 0; //Quitamos el movimiento.
+						boardManagement[candidate.x][candidate.y] = 0; //We undo the movement.
 					}
-
-
 				}
 				return value;
 			} 
@@ -185,19 +190,16 @@ namespace ttt
 				for (Coordinates candidate : movs){ 
 					if (!pruning){
 						executeMovement(boardManagement,candidate,actualPlayer);
-						value = std::min(value,minimax(depth,alpha,beta,!actualPlayer,board,boardManagement));
+						value = std::min(value,minimax(depth,alpha,beta,!actualPlayer,board,boardManagement)); //we search the lesser defeat for the current player.
 						beta = std::min(beta,value);
 						if (beta<=alpha){
-							std::cout<<"Prouding..."<<std::endl;
 							pruning=true;
 						}
-						boardManagement[candidate.x][candidate.y] = 0; //Quitamos el movimiento.
+						boardManagement[candidate.x][candidate.y] = 0; //Undo the last movement.
 					}
 				}
 				return value;
-
 			}
-
 		}
 	}
 
@@ -209,24 +211,22 @@ namespace ttt
 			std::vector<Coordinates> movs = getMovs(board,boardManagement);
 
 			Coordinates coords = randomCoordinate(board);
-			bool actualPlayer = true; //Acarrea el contexto de cual jugador esta por poner ficha. Si es verdadero, es aquel jugador que llamo en un primer momento al metodo.
-			//De lo contrario, es su rival.
+			bool actualPlayer = true; //It carries the context of which player is about to put a token. If it is true, it is the player who first called the method.
+									   //Otherwise, it's your rival.
 
 			int alpha = -std::numeric_limits<int>::max(); //-Infinite
 			int beta = std::numeric_limits<int>::max(); //Infinite.
 			int best_alpha = alpha;
 			for (Coordinates candidate : movs){ 
-				executeMovement(boardManagement,candidate,actualPlayer); //Consumimos el movimiento.
+				executeMovement(boardManagement,candidate,actualPlayer); //We consume a tile.
 				alpha=std::max(alpha,minimax(5, alpha,beta,!actualPlayer, board,boardManagement));
 				if (alpha > best_alpha){
 					best_alpha = alpha;
 					coords = candidate;
 				}
-				boardManagement[candidate.x][candidate.y] = 0; //Quitamos el movimiento.
+				boardManagement[candidate.x][candidate.y] = 0; //Undo the last movement.
 			}
-			std::cout<<"El candidato elegido es: "<<coords.x<<" , "<<coords.y<<std::endl;
-
-
+			//std::cout<<"Candidate choosen: "<<coords.x<<" , "<<coords.y<<std::endl;
 			movs.clear();
 			return coords;
 		}
@@ -234,18 +234,15 @@ namespace ttt
 	}
 
 
-
-//Board Management: Hacemos la captura de la matriz de juego en su estado actual.
-//De esta forma, para el algormitmo implementado, podemos trabajar con una copia de la matriz con una abstraccion semantica distinta a la desplegada en el menu.
-	
-//semantica del tablero:
-	//1 --> Jugador actual.
-	//0 --> No lo tiene nadie.
-	//2 --> Jugador contrincante.
+// Token semantic:
+	//1 --> Actual Player (the one that invokes the function in the first place).
+	//0 --> Rival Player.
+	//2 --> Empy Tile.
 	
 
 
-
+// We capture the game matrix in its current state with a reduced semantic, only for algorithms propours.
+// boardManagement will the the pointer to the dynamic matrix that carries our board game.
 
 	static int** initializeAlphaBeta(Board const& board, std::string const& name)
 	{
@@ -272,12 +269,6 @@ namespace ttt
 		return boardManagement;
 	}
 
-	
-
-
-
-
-
 	PlayerExe::PlayerExe(std::string const& name):mName(name)
 	{
 	}
@@ -289,12 +280,12 @@ namespace ttt
 
 	Coordinates PlayerExe::play(Board const& board) const
 	{
-		int  ** boardManagement = ttt::initializeAlphaBeta(board,name()); //En este momento hacemos la captura de la matriz actual.
+		int  ** boardManagement = ttt::initializeAlphaBeta(board,name()); 
 		return ttt::play(board,boardManagement,name());
 	}
 
 
-
+//Functions with prints
 
 /*
 	static bool gameOver(Board const& board, int ** boardManagement)
@@ -344,26 +335,6 @@ namespace ttt
 
 
 */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 } // namespace ttt
