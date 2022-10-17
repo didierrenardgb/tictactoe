@@ -5,6 +5,7 @@
 #include <iostream>
 #include <random>
 #include <vector>
+#include <algorithm> 
 
 namespace ttt
 {
@@ -38,6 +39,10 @@ namespace ttt
 	}
 
 
+	//Paso el board como parametro para conocer las dimensiones del mismo. De esta forma, puedo usar notaciones de punteros de una manera simplificada sabiendo
+	//de antemano las dimensiones de la estructura.
+
+
 	static std::vector<Coordinates> getMovs(Board const& board,int ** boardManagement) //Obtenemos todos los posibles movimientos a realizar del tablero.
 	{
 		std::vector<Coordinates> output;
@@ -53,8 +58,42 @@ namespace ttt
 	}
 
 
+	//Si gano el jugador, devuelvo 10
+	//Si gano el contrincante, devuelvo -10.
+	//Si hubo empate, devuelvo 0.
+	//Si no termino aun, devuelvo dependiendo la heuristica de las fichas.
 
-	static bool gameOver(Board const& board, int ** boardManagement)
+	static int calculateValue(Board const& board, int ** boardManagement, int gameOverStatus, bool isActualPlayer)
+	{
+		int heuristicValue = 0;
+		switch (gameOverStatus)
+		{
+			case 1:
+				heuristicValue = 10;
+			break;
+			case 2:
+				heuristicValue = -10;
+			break;
+			case 3:
+				heuristicValue = 0;
+			break;
+			default:
+				heuristicValue = 5;
+				if (!isActualPlayer){
+					heuristicValue = - heuristicValue;
+				}
+			break;
+
+		}
+		return heuristicValue;
+	}
+
+	//Si se tiene que seguir jugando, retorna 0.
+	//Si gano el jugador, retorna 1.
+	//Si gano el rival, retorna 2.
+	//Si hubo empate, retorna 3.
+
+	static int gameOver(Board const& board, int ** boardManagement)
 	{
 
 		bool fullBoard = true; //Supongo que el tablero esta completo.
@@ -69,36 +108,96 @@ namespace ttt
 				}
 				if (i+2<width){
 					if (boardManagement[i][j] == boardManagement[i+1][j] &&  boardManagement[i+1][j] == boardManagement[i+2][j] && boardManagement[i][j]!=0){
-						return true;
+						return boardManagement[i][j];
 					}
 				}
 				if (j+2< height){
 					if (boardManagement[i][j] == boardManagement[i][j+1] && boardManagement[i][j+1] ==  boardManagement[i][j+2] && boardManagement[i][j]!=0){
-						return true;
+						return boardManagement[i][j];
 					}
 				}
 				if (j+2<height && i+2 < width){
 					if ((boardManagement[i][j] == boardManagement[i+1][j+1] && boardManagement[i+1][j+1] == boardManagement[i+2][j+2] && boardManagement[i][j]!=0)   ||
 						(boardManagement[i][j+2] == boardManagement[i+1][j+1] && boardManagement[i+1][j+1] == boardManagement[i+2][j] && boardManagement[i][j+2]!=0)) {
-							return true;
+							return boardManagement[i+1][j+1];
 						}
 				}
 			}
 		
 		}
-		return fullBoard; //Si todas al menos una ficha sin colocar, esto dará falso. En caso que todas hayan estado ocupadas, se llego a un empate.
+		if (fullBoard){ //Si todas al menos una ficha sin colocar, esto dará falso. En caso que todas hayan estado ocupadas, se llego a un empate.
+			return 3;
+		}else{
+			return 0;
+		}
 	}
 
 
-	static int minimax(int depth, int alpha, int beta, bool isCurrentPlayer, Board const& board, int ** boardManagement)
+	static int minimax(int depth, int alpha, int beta, bool actualPlayer, Board const& board, int ** boardManagement)
 	{
+		/*std::string mess;
+		if (actualPlayer)
+				mess = "JUGADOR ACTUAL";
+			else
+				mess ="JUGADOR RIVAL";
+
+		std::cout<<"NIVEL MINIMAX: "<<depth<<" , VALOR ALPHA: "<<alpha<<" VALOR BETA: "<<beta<<" , ESTA JUGANDO: "<<mess<<" Y EL TABLERO ESTA AHORA: "<<std::endl;
+		printBoardState(board,boardManagement);
+		*/
+
+
 		std::vector<Coordinates> movs = getMovs(board,boardManagement);
 		bool pruning =false;
-		//if ((depth = 0)) 
-		
-		
-		
+		int gameOverValue = gameOver(board,boardManagement);
+		//std::cout<<"LLega aca"<<std::endl;
+		if ((depth == 0) || gameOverValue>0){
+			/*if (depth==0)
+					std::cout<<"PROFUNDIDAD MAXIMA ALCANZADA";
+				else
+					std::cout<<"HUBO GAME OVER"<<std::endl;*/
+			return calculateValue(board,boardManagement,gameOverValue,actualPlayer);
 
+		}
+		else{
+			std::vector<Coordinates> movs = getMovs(board,boardManagement);
+			
+			if (actualPlayer)
+			{
+				int value =-std::numeric_limits<int>::max();
+				for (Coordinates candidate : movs){ 
+					if (!pruning)
+					{
+						executeMovement(boardManagement,candidate,actualPlayer);
+						value = std::max(value,minimax(depth,alpha,beta,!actualPlayer,board,boardManagement));
+						alpha = std::max(alpha,value);
+						if (alpha>=beta){
+							pruning = true;
+						}
+						boardManagement[candidate.x][candidate.y] = 0; //Quitamos el movimiento.
+					}
+
+
+				}
+				return value;
+			} 
+			else{
+				int value =std::numeric_limits<int>::max();
+				for (Coordinates candidate : movs){ 
+					if (!pruning){
+						executeMovement(boardManagement,candidate,actualPlayer);
+						value = std::min(value,minimax(depth,alpha,beta,!actualPlayer,board,boardManagement));
+						beta = std::min(beta,value);
+						if (beta<=alpha){
+							pruning=true;
+						}
+						boardManagement[candidate.x][candidate.y] = 0; //Quitamos el movimiento.
+					}
+				}
+				return value;
+
+			}
+
+		}
 	}
 
 
@@ -120,15 +219,20 @@ namespace ttt
 			int alpha = -std::numeric_limits<int>::max(); //-Infinite
 			int beta = std::numeric_limits<int>::max(); //Infinite.
 			int best_alpha = alpha;
-			/*for (Coordinates candidate : movs){ 
+			for (Coordinates candidate : movs){ 
+				//std::cout<<"LLEGO RAIZ"<<std::endl;
 				executeMovement(boardManagement,candidate,actualPlayer); //Consumimos el movimiento.
-				//alpha=max(alpha,minimax(depth-1, alpha,beta,!actualPlayer, board,boardManagement));
+				alpha=std::max(alpha,minimax(5, alpha,beta,!actualPlayer, board,boardManagement));
 				if (alpha > best_alpha){
 					best_alpha = alpha;
 					coords = candidate;
 				}
 				boardManagement[candidate.x][candidate.y] = 0; //Quitamos el movimiento.
-			}*/
+			}
+			std::cout<<"EL CANDIDATO ES : "<<coords.x<<" , "<<coords.y<<std::endl;
+
+
+			return coords;
 
 
 			
@@ -139,15 +243,15 @@ namespace ttt
 
 
 
-
+			/*
 			while ((board.tile(coords) == nullptr) || board.tile(coords)->owner().has_value())
 			{
 				coords = randomCoordinate(board);
 			}
+			*/
 
 			executeMovement(boardManagement,coords,actualPlayer);
 			printBoardState(board,boardManagement);
-			gameOver(board,boardManagement);
 
 
 
