@@ -204,6 +204,7 @@ namespace ttt
 								coords = solution.coords;
 							}
 						}
+						total_marks = 0;
 					}
 
 				}
