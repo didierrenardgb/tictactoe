@@ -154,7 +154,7 @@ namespace ttt
 		return { -1,-1 };
 	}
 
-	//Strategizes next move when Rules based system does not find a winning move for the current and next turn. Currently incomplete. Generates a random move, instead.
+	//Strategizes next move via a recursive function when Rules based system does not find a winning move for the current and next turn. 
 	Coordinates PlayerFranL::strategize(Board const& board) const {
 		if (board.valid())
 		{
