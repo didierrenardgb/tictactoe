@@ -42,11 +42,18 @@ private:
 	int maxDepth = 9; //Check about this.
 	int pointsForWin = 9; //Temporal
 
+	//MMM
+	const int MAXR = 3;
+	const int MAXC = 3;
+
 	//Methods
 	Coordinates minimax(Board const& board);
 	const int minimize(Board const& board, int row, int column, int depth);
 	const int maximize(Board const& board, int row, int column, int depth);
-	const int evaluate(int row, int column);
+	const int evaluate(Board const& board, int** const& myBoard, int row, int column);
+
+	static int** copyBoard(Board const& board);
+	static void printBoard(int** const& myBoard);
 
 };
 
