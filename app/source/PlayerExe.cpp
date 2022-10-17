@@ -149,12 +149,11 @@ namespace ttt
 		std::vector<Coordinates> movs = getMovs(board,boardManagement);
 		bool pruning =false;
 		int gameOverValue = gameOver(board,boardManagement);
-		//std::cout<<"LLega aca"<<std::endl;
 		if ((depth == 0) || gameOverValue>0){
-			/*if (depth==0)
-					std::cout<<"PROFUNDIDAD MAXIMA ALCANZADA";
+			if (depth==0)
+					std::cout<<"Profundidad máxima alcanzada.";
 				else
-					std::cout<<"HUBO GAME OVER"<<std::endl;*/
+					std::cout<<"HUBO GAME OVER"<<std::endl;
 			return calculateValue(board,boardManagement,gameOverValue,actualPlayer);
 
 		}
@@ -171,6 +170,7 @@ namespace ttt
 						value = std::max(value,minimax(depth,alpha,beta,!actualPlayer,board,boardManagement));
 						alpha = std::max(alpha,value);
 						if (alpha>=beta){
+							std::cout<<"Prouding..."<<std::endl;
 							pruning = true;
 						}
 						boardManagement[candidate.x][candidate.y] = 0; //Quitamos el movimiento.
@@ -188,6 +188,7 @@ namespace ttt
 						value = std::min(value,minimax(depth,alpha,beta,!actualPlayer,board,boardManagement));
 						beta = std::min(beta,value);
 						if (beta<=alpha){
+							std::cout<<"Prouding..."<<std::endl;
 							pruning=true;
 						}
 						boardManagement[candidate.x][candidate.y] = 0; //Quitamos el movimiento.
@@ -204,13 +205,8 @@ namespace ttt
 	static Coordinates play(Board const& board, int ** boardManagement, std::string name)  //Obtenemos la coordenada final de movimiento.
 	{
 
-
-
 		if (board.valid()){
-			//std::cout<<"Nueva Build"<<std::endl;
 			std::vector<Coordinates> movs = getMovs(board,boardManagement);
-			/*for (Coordinates c : movs){ std::cout<<"Lista de movimientos, posible candidato: "<<c.x<<" , "<<c.y<<" ."<<std::endl;}*/
-			//printBoardState(board,boardManagement);
 
 			Coordinates coords = randomCoordinate(board);
 			bool actualPlayer = true; //Acarrea el contexto de cual jugador esta por poner ficha. Si es verdadero, es aquel jugador que llamo en un primer momento al metodo.
@@ -220,7 +216,6 @@ namespace ttt
 			int beta = std::numeric_limits<int>::max(); //Infinite.
 			int best_alpha = alpha;
 			for (Coordinates candidate : movs){ 
-				//std::cout<<"LLEGO RAIZ"<<std::endl;
 				executeMovement(boardManagement,candidate,actualPlayer); //Consumimos el movimiento.
 				alpha=std::max(alpha,minimax(5, alpha,beta,!actualPlayer, board,boardManagement));
 				if (alpha > best_alpha){
@@ -229,34 +224,7 @@ namespace ttt
 				}
 				boardManagement[candidate.x][candidate.y] = 0; //Quitamos el movimiento.
 			}
-			std::cout<<"EL CANDIDATO ES : "<<coords.x<<" , "<<coords.y<<std::endl;
-
-
-			return coords;
-
-
-			
-
-
-
-
-
-
-
-			/*
-			while ((board.tile(coords) == nullptr) || board.tile(coords)->owner().has_value())
-			{
-				coords = randomCoordinate(board);
-			}
-			*/
-
-			executeMovement(boardManagement,coords,actualPlayer);
-			printBoardState(board,boardManagement);
-
-
-
-
-
+			std::cout<<"El candidato elegido es: "<<coords.x<<" , "<<coords.y<<std::endl;
 
 
 			movs.clear();
