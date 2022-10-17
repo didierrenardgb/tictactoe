@@ -83,11 +83,17 @@ Coordinates PlayerErick::play(Board const& board) const
 }
 
 Coordinates PlayerErick::minimax(Board const& board){
-	//Do the algorythm here.
+	//Set utility variables.
 	Coordinates bestCoordinate;
 	int worth;
 	int bestUtility = -INFINITY;
 	int depth = 0;
+
+	int MAXR = board.height();
+	int MAXC = board.width();
+
+	//Copy the current state of the board (before playing).
+	int ** myBoard = copyBoard(board);
 
 	//The board here is a matrix where you can put a token anywhere that's not occupied.
 	//Considering that, we need to roam for all the posible places to check their worth value, and select the best one.
@@ -95,17 +101,18 @@ Coordinates PlayerErick::minimax(Board const& board){
 	for(size_t r = 0; r < MAXR; r++){ //Care with this as it could be a bigger board.
 		for(size_t c = 0; c < MAXC; c++){ //Care with this as it could be a bigger board.
 			//Check if the coordinate is occupied or not.
-
-			//Play on that coordinate
-
-			//Get the worth value
-			worth = minimize(board, r, c, depth);
-			if(worth > bestUtility){
-				bestUtility = worth;
-				bestCoordinate.x = c;
-				bestCoordinate.y = r; 
+			if(myBoard[r][c] == 0){
+				//Play on that coordinate
+				myBoard[r][c] = 1;
+				//Get the worth value
+				worth = minimize(board, myBoard, r, c, depth);
+				if(worth > bestUtility){
+					bestUtility = worth;
+					bestCoordinate.x = c;
+					bestCoordinate.y = r; 
+				}
+				myBoard[r][c] = 0; //Remove token
 			}
-
 			//Do some more things
 		}
 	}
@@ -114,68 +121,108 @@ Coordinates PlayerErick::minimax(Board const& board){
 
 }
 
-const int PlayerErick::minimize(Board const& board, int row, int column, int depth){
-	int ** myBoard = copyBoard(board);
+const int PlayerErick::minimize(Board const& board, int** myBoard, int row, int column, int depth){
 	int worth = evaluate(board, myBoard, row, column); //This is the heuristic
 	
 	//Check for TERMINAL STATES (the first two about the board, the other about the algorythm).
 
-	//Check for a full board and not wincon, so it's a draw.
-	if(board.filled()){
-		return 0;
-	}
 	//If it plays on this position, it wins.
 	//Or the maximum depth has been reached, so it's the end of the search on that branch.
 	if((worth >= pointsForWin) || (depth >= maxDepth)){ 
 		return worth;
 	}
 
+	//Check for a full board and not wincon, so it's a draw.
+	//Do not use the original board, use the copy!!!!!!!1!!11!
+	int MAXR = board.height();
+	int MAXC = board.width();
+	bool full = true;
+	for(size_t i=0; i<MAXR; i++){
+		for(size_t j=0; j<MAXR; j++){
+			if(myBoard[i][j] == 0){
+				full=false;
+				break;
+			}
+		}
+		if(!full){
+			break;
+		}
+	}
+	if(full){
+		return 0;
+	}
+
+	//Keep looking because the current state of the game is not a leaf
+	
 	//Start of oponent path.
 	int worstUtility = INFINITY;
 	for(size_t r = 0; r < MAXR; r++){ //Care with this as it could be a bigger board.
 		for(size_t c = 0; c < MAXC; c++){ //Care with this as it could be a bigger board.
 			//Check if the coordinate is occupied or not.
-
-			//Play on that coordinate
-
-			//Get the worth value
-			worth = maximize(board, r, c, depth+1);
-			if(worth < worstUtility){
-				worstUtility = worth;
+			if(myBoard[r][c] == 0){
+				//Play on that coordinate
+				myBoard[r][c] = -1;
+				//Get the worth value
+				worth = maximize(board, myBoard, r, c, depth+1);
+				if(worth < worstUtility){
+					worstUtility = worth;
+				}
+				//Do some more things
+				myBoard[r][c] = 0; //Remove token
 			}
-
-			//Do some more things
 		}
 	}
 	
 	return worstUtility; 
 }
 
-const int PlayerErick::maximize(Board const& board, int row, int column, int depth){
-	int ** myBoard = copyBoard(board);
+const int PlayerErick::maximize(Board const& board, int** myBoard, int row, int column, int depth){
 	int worth = evaluate(board,myBoard,row,column); //This is the heuristic.
-	
-	if((worth >= pointsForWin) || (depth >= maxDepth)){
-		return -worth; //Needs to be negative because the nature of the game.
+
+	//If it plays on this position, it wins.
+	//Or the maximum depth has been reached, so it's the end of the search on that branch.
+	if((worth >= pointsForWin) || (depth >= maxDepth)){ 
+		return -worth; //Needs to be negative because the nature of the game
 	}
 
-	if(board.filled()){ //Draw
+	//Check if the board is full and no one won
+	int MAXR = board.height();
+	int MAXC = board.width();
+	bool full = true;
+	for(size_t i=0; i<MAXR; i++){
+		for(size_t j=0; j<MAXR; j++){
+			if(myBoard[i][j] == 0){
+				full=false;
+				break;
+			}
+		}
+		if(!full){
+			break;
+		}
+	}
+	if(full){ //Draw
 		return 0;
 	}
+
+	//Keep looking because the current state of the game is not a leaf
 
 	int bestUtility = -INFINITY;
 	for(size_t r = 0; r < MAXR; r++){ //Care with this as it could be a bigger board.
 		for(size_t c = 0; c < MAXC; c++){ //Care with this as it could be a bigger board.
 			//Check if the coordinate is occupied or not.
-
-			//Play on that coordinate
-
-			//Get the worth value
-			worth = minimize(board, r, c, depth+1);
-			if(worth > bestUtility){
-				bestUtility = worth;
+			if(myBoard[r][c] == 0){
+				//Play on that coordinate
+				myBoard[r][c] = 1;
+				//Get the worth value
+				worth = minimize(board, myBoard, r, c, depth);
+				if(worth > bestUtility){
+					bestUtility = worth; 
+				}
+				myBoard[r][c] = 0; //Remove token
 			}
-
+			else{
+				continue; //Maybe this isn't necessary
+			}
 			//Do some more things
 		}
 	}
@@ -431,6 +478,8 @@ const int PlayerErick::evaluate(Board const& board, int** const& myBoard, int ro
 			}
 		}
 	}
+
+	//Check if the token is next to another one of yours, so add points
 	return toReturn;
 
 }

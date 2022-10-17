@@ -48,8 +48,8 @@ private:
 
 	//Methods
 	Coordinates minimax(Board const& board);
-	const int minimize(Board const& board, int row, int column, int depth);
-	const int maximize(Board const& board, int row, int column, int depth);
+	const int minimize(Board const& board, int** myBoard, int row, int column, int depth);
+	const int maximize(Board const& board, int** myBoard, int row, int column, int depth);
 	const int evaluate(Board const& board, int** const& myBoard, int row, int column);
 
 	static int** copyBoard(Board const& board);
