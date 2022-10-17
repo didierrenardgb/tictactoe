@@ -208,6 +208,12 @@ namespace ttt
 					}
 
 				}
+				for (int i = 0; i < board.winCondition(); i++)
+				{
+					delete[] smalltempboard[i];
+				}
+				delete[] smalltempboard;
+
 
 
 			}
