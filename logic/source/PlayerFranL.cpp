@@ -216,7 +216,7 @@ namespace ttt
 			//a theater is a wincon x wincon sized subboard with at least 3 pieces.
 			if (!available_theaters)
 			{
-				//Adding small temporary aggressor function (if a move sets up a possible -not guaranteed- victory next move, return that) while working on strategic logic.
+				//Small temporary aggressor function (if a move sets up a possible -not guaranteed- victory next move, return that).
 				for (int i = 0; i < board.width(); i++)
 				{
 					for (int j = 0; j < board.height(); j++)
@@ -282,7 +282,6 @@ namespace ttt
 
 	//Create a simplified copy of the board, passing from the object to a 2d array of 0s (free spaces), -1s (controlled by an opponent) and 1s (controlled by the player)
 	int** PlayerFranL::copyboard(Board const& board) const {
-		//Me cuesta trabajar sobre una copia del board, asi que hago una copia tonta yo, de nuevo, no me parece muy elegante.
 		int** array = new int* [board.height()];
 		for (int i = 0; i < board.height(); i++)
 		{
@@ -311,7 +310,6 @@ namespace ttt
 	//Check if player currentplayer will win in the current boardstate, returns true if currentplayer has won in board, false otherwise.
 	bool PlayerFranL::willwin(int currentplayer, int** const& board,int width, int height, int wincon) const {
 
-		//Funcion copiada y modificada de Match, tiene que haber una mejor forma de hacer esto ;_;
 		for (int x = 0; x < width; x++)
 		{
 			for (int y = 0; y < height; y++)
