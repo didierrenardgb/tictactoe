@@ -356,7 +356,7 @@ namespace ttt
 
 	//Recursive funcion that scans a winning move from a wincon x wincon sized board
 	PlayerFranL::next_move PlayerFranL::evaluateboard(int** & board, int wincon, int depth, Coordinates const last_move) const {
-		Coordinates coords;
+		Coordinates coords=last_move;
 		int lowest_depth = 9999;
 		if (last_move.x == -1)
 		{
@@ -387,7 +387,8 @@ namespace ttt
 			{
 				if (willwin(1, board, wincon, wincon, wincon))
 				{
-					return { depth,last_move };
+					coords = last_move;
+					lowest_depth = depth;
 				}
 				else
 				{
@@ -418,7 +419,8 @@ namespace ttt
 			{
 				if (willwin(-1, board, wincon, wincon, wincon))
 				{
-					return { 1000-depth, last_move };
+					lowest_depth = 1000-depth;
+					coords = last_move;
 				}
 				else
 				{
