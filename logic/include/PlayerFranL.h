@@ -20,10 +20,16 @@ namespace ttt
 
 	private:
 		std::string mName;
+		//Maximum Win condiditon Length that will be allowed for recursive strategy, if board.winCondition is longer, strategy layer will be skipped for performance reasons 
 		int mMax_len;
+
+		//Minimum pieces in winCondition distance from each other to be considered a "theater" (a winCondition x winCondition sized sub-board) to by analyzed recursively for strategy
 		int mMin_marks;
+		
+		//Maximum recursive depth to be analyzed. If the recursive strategy goes deeper it will instantly return a random valid move in the theater, instead.
 		int mMax_depth;
 
+		//Internal structure used for recursion
 		struct next_move {
 			int depth;
 			Coordinates coords;
