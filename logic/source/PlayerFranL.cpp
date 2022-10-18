@@ -287,6 +287,15 @@ namespace ttt
 
 
 			}
+			//Final Sanity Check, if recursion stopped due to depth or a clogged board, return a random valid move
+			if (coords.x == -1)
+			{
+				coords = { std::rand() % board.width(), std::rand() % board.height() };
+				while ((board.tile(coords) == nullptr) || board.tile(coords)->owner().has_value())
+				{
+					coords = { std::rand() % board.width(), std::rand() % board.height() };
+				}
+			}
 			for (int i = 0; i < board.width(); i++)
 			{
 				delete[] tempboard[i];
@@ -462,7 +471,7 @@ namespace ttt
 							{
 								if (board[i][j] == 0)
 								{
-									coords = { i,j };
+									return { 9999,{ i,j } };
 								}
 							}
 						}
