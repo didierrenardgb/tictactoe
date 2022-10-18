@@ -229,6 +229,7 @@ namespace ttt
 						if (total_marks >= mMin_marks)
 						{
 							available_theaters = true;
+							//start of recursive algorithm
 							PlayerFranL::next_move solution = evaluateboard(smalltempboard, board.winCondition());
 							if (solution.depth < lowest_depth)
 							{
@@ -251,10 +252,10 @@ namespace ttt
 			}
 
 			//Generate random valid coordinate if there are no available theaters
-			//a theater is a wincon x wincon sized subboard with at least 3 pieces.
+			//a theater is a wincon x wincon sized subboard with at least mMin_marks pieces.
 			if (!available_theaters)
 			{
-				//Small temporary aggressor function (if a move sets up a possible -not guaranteed- victory next move, return that).
+				//Small aggressor function (if a move sets up a possible -not guaranteed- victory next move, return that).
 				for (int i = 0; i < board.width(); i++)
 				{
 					for (int j = 0; j < board.height(); j++)
