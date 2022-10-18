@@ -410,7 +410,7 @@ namespace ttt
 		//If no valid move was found after mMax_depth searches, return a random valid move
 		if (depth > mMax_depth)
 		{
-			{
+		
 				for (int i = 0; i < wincon; i++)
 				{
 					{
@@ -425,7 +425,11 @@ namespace ttt
 
 				}
 
-			}
+				//Final sanity check in case of a clogged board with no valid moves
+				return { 9999, { -1,-1 } };
+
+
+		}
 			if (last_move.x == -1)
 			{
 				for (int i = 0; i < wincon; i++)
@@ -537,6 +541,5 @@ namespace ttt
 			}
 			return { lowest_depth,coords };
 		}
-	}
 
 } // namespace ttt
