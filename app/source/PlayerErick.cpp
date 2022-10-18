@@ -35,148 +35,262 @@
 
 namespace ttt
 {
+const int pointsForWin = 5;
+const int maxDepth = 4;
 
-static Coordinates randomCoordinate(Board const& board)
-{
-	return { std::rand() % board.width(), std::rand() % board.height() };
-}
-
-static Coordinates play(Board const& board)
-{
-	if (board.valid())
-	{
-		//My part
-
-		//Didi's
-		Coordinates coords = randomCoordinate(board);
-		while ((board.tile(coords) == nullptr) || board.tile(coords)->owner().has_value())
-		{
-			coords = randomCoordinate(board);
-		}
-		return coords;
-	}
-
-	return { 0, 0 };
-}
-
-PlayerErick::PlayerErick():
-	mName("Erick")
-{
-}
-
-std::string const& PlayerErick::name() const
-{
-	return mName;
-}
-
-Coordinates PlayerErick::play(Board const& board) const
-{
-	//My part
-	int ** myBoard = copyBoard(board);
-	printBoard(myBoard);
-	for(int i = 0; i < board.height(); i++){
-		delete [] myBoard[i];
-	}
-	delete [] myBoard;
-	//Didi's
-	return ttt::play(board);
-}
-
-Coordinates PlayerErick::minimax(Board const& board){
-	//Set utility variables.
-	Coordinates bestCoordinate;
-	int worth;
-	int bestUtility = -INFINITY;
-	int depth = 0;
-
+static int** copyBoard(Board const& board){
 	int MAXR = board.height();
 	int MAXC = board.width();
 
-	//Copy the current state of the board (before playing).
-	int ** myBoard = copyBoard(board);
-
-	//The board here is a matrix where you can put a token anywhere that's not occupied.
-	//Considering that, we need to roam for all the posible places to check their worth value, and select the best one.
-
-	for(size_t r = 0; r < MAXR; r++){ //Care with this as it could be a bigger board.
-		for(size_t c = 0; c < MAXC; c++){ //Care with this as it could be a bigger board.
-			//Check if the coordinate is occupied or not.
-			if(myBoard[r][c] == 0){
-				//Play on that coordinate
-				myBoard[r][c] = 1;
-				//Get the worth value
-				worth = minimize(board, myBoard, r, c, depth);
-				if(worth > bestUtility){
-					bestUtility = worth;
-					bestCoordinate.x = c;
-					bestCoordinate.y = r; 
-				}
-				myBoard[r][c] = 0; //Remove token
+	int ** myBoard = new int*[MAXR];
+	for(size_t r = 0; r < MAXR; r++){
+		myBoard[r] = new int[MAXC];
+		for(size_t c = 0; c < MAXC; c++){
+			//Copy everything into an int matrix
+			Coordinates coords;
+			coords.x = c;
+			coords.y = r;
+			if(!board.tile(coords)->owner().has_value()){
+				myBoard[r][c] = 0; //It's empty.
 			}
-			//Do some more things
+			else if(board.tile(coords)->owner()->get().name() == "Erick"){
+				myBoard[r][c] = 1; //It's mine.
+			}
+			else{
+				myBoard[r][c] = -1; //It's not mine.
+			}
 		}
 	}
-
-	return bestCoordinate;
-
+	return myBoard;
 }
 
-const int PlayerErick::minimize(Board const& board, int** myBoard, int row, int column, int depth){
-	int worth = evaluate(board, myBoard, row, column); //This is the heuristic
-	
-	//Check for TERMINAL STATES (the first two about the board, the other about the algorythm).
-
-	//If it plays on this position, it wins.
-	//Or the maximum depth has been reached, so it's the end of the search on that branch.
-	if((worth >= pointsForWin) || (depth >= maxDepth)){ 
-		return worth;
-	}
-
-	//Check for a full board and not wincon, so it's a draw.
-	//Do not use the original board, use the copy!!!!!!!1!!11!
-	int MAXR = board.height();
-	int MAXC = board.width();
-	bool full = true;
-	for(size_t i=0; i<MAXR; i++){
-		for(size_t j=0; j<MAXR; j++){
-			if(myBoard[i][j] == 0){
-				full=false;
-				break;
-			}
+static void printBoard(int** const& myBoard){
+	std::cout << std::endl;
+	for(size_t i=0; i < 3; i++){
+		for(size_t j=0; j < 3; j++){
+			std::cout << myBoard[i][j] << " | ";
 		}
-		if(!full){
-			break;
-		}
+		std::cout << std::endl;
 	}
-	if(full){
-		return 0;
-	}
-
-	//Keep looking because the current state of the game is not a leaf
-	
-	//Start of oponent path.
-	int worstUtility = INFINITY;
-	for(size_t r = 0; r < MAXR; r++){ //Care with this as it could be a bigger board.
-		for(size_t c = 0; c < MAXC; c++){ //Care with this as it could be a bigger board.
-			//Check if the coordinate is occupied or not.
-			if(myBoard[r][c] == 0){
-				//Play on that coordinate
-				myBoard[r][c] = -1;
-				//Get the worth value
-				worth = maximize(board, myBoard, r, c, depth+1);
-				if(worth < worstUtility){
-					worstUtility = worth;
-				}
-				//Do some more things
-				myBoard[r][c] = 0; //Remove token
-			}
-		}
-	}
-	
-	return worstUtility; 
 }
 
-const int PlayerErick::maximize(Board const& board, int** myBoard, int row, int column, int depth){
+static const int evaluate(Board const& board, int** const& myBoard, int row, int column){
+	/*
+	//Center
+	return 7;
+	//Next to one of yours
+	return 5;
+	//Wincon
+	return 10;
+	//Draw
+	return 0;
+	*/
+
+	//Start of the code
+	int MAXR = board.height()-1;
+	int MAXC = board.width()-1;
+	int toReturn = 0;
+
+	//First turn, always right at the middle
+	if((board.empty()) && (row == MAXR/2) && (column == MAXC/2)){
+		toReturn = 7;
+	}
+
+	//Check wincon for row
+	if(column == 0){ //Leftmost col
+		//Only check two to the right
+		if((myBoard[row][column] == myBoard[row][column+1]) && (myBoard[row][column+1] == myBoard[row][column+2])){
+			//Check who won
+			if(myBoard[row][column] == 1){
+				toReturn = 10; //It was me
+			}
+			else if(myBoard[row][column] == -1){
+				toReturn = -10; //It was the oponent
+			}
+		}
+	}
+	else if(column == MAXC){ //Rightmost col
+		//Only check two to the left
+		if((myBoard[row][column] == myBoard[row][column-1]) && (myBoard[row][column-1] == myBoard[row][column-2])){
+			//Check who won
+			if(myBoard[row][column] == 1){
+				toReturn = 10; //It was me
+			}
+			else if(myBoard[row][column] == -1){
+				toReturn = -10; //It was the oponent
+			}
+		}
+	}
+	else{ //Both sides now
+		//One left-One right, Two left, Two right
+
+		//Make all this a little more efficient
+		if((myBoard[row][column] == myBoard[row][column+1]) && (myBoard[row][column-1] == myBoard[row][column+1])){
+			//Check who won
+			if(myBoard[row][column] == 1){
+				toReturn = 10; //It was me
+			}
+			else if(myBoard[row][column] == -1){
+				toReturn = -10; //It was the oponent
+			}
+		}
+
+		if((column-2 >= 0) && (myBoard[row][column] == myBoard[row][column-1]) && (myBoard[row][column+1] == myBoard[row][column-2])){
+			//Check who won
+			if(myBoard[row][column] == 1){
+				toReturn = 10; //It was me
+			}
+			else if(myBoard[row][column] == -1){
+				toReturn = -10; //It was the oponent
+			}
+		}
+
+		if((column+2 <= MAXC)&&(myBoard[row][column] == myBoard[row][column+1]) && (myBoard[row][column+1] == myBoard[row][column+2])){
+			//Check who won
+			if(myBoard[row][column] == 1){
+				toReturn = 10; //It was me
+			}
+			else if(myBoard[row][column] == -1){
+				toReturn = -10; //It was the oponent
+			}
+		}
+	}
+
+	//Check wincon for column
+	if(row == 0){ //Upmost row
+		//Only check two to the bottom
+		if((myBoard[row][column] == myBoard[row+1][column]) && (myBoard[row+1][column] == myBoard[row+2][column])){
+			//Check who won
+			if(myBoard[row][column] == 1){
+				toReturn = 10; //It was me
+			}
+			else if(myBoard[row][column] == -1){
+				toReturn = -10; //It was the oponent
+			}
+		}
+	}
+	else if(row == MAXR){ //Downmost row
+		//Only check two to the top
+		if((myBoard[row][column] == myBoard[row-1][column]) && (myBoard[row-1][column] == myBoard[row-2][column])){
+			//Check who won
+			if(myBoard[row][column] == 1){
+				toReturn = 10; //It was me
+			}
+			else if(myBoard[row][column] == -1){
+				toReturn = -10; //It was the oponent
+			}
+		}
+	}
+	else{ //Both sides now
+		//One up-One down, Two up, Two down
+
+		//Make all this a little more efficient
+		if((myBoard[row][column] == myBoard[row+1][column]) && (myBoard[row+1][column] == myBoard[row-1][column])){
+			//Check who won
+			if(myBoard[row][column] == 1){
+				toReturn = 10; //It was me
+			}
+			else if(myBoard[row][column] == -1){
+				toReturn = -10; //It was the oponent
+			}
+		}
+
+		if((row-2 >= 0) && (myBoard[row][column] == myBoard[row-1][column]) && (myBoard[row-1][column] == myBoard[row-2][column])){
+			//Check who won
+			if(myBoard[row][column] == 1){
+				toReturn = 10; //It was me
+			}
+			else if(myBoard[row][column] == -1){
+				toReturn = -10; //It was the oponent
+			}
+		}
+
+		if((row+2 <= MAXR) && (myBoard[row][column] == myBoard[row+1][column]) && (myBoard[row+1][column] == myBoard[row+2][column])){
+			//Check who won
+			if(myBoard[row][column] == 1){
+				toReturn = 10; //It was me
+			}
+			else if(myBoard[row][column] == -1){
+				toReturn = -10; //It was the oponent
+			}
+		}
+	}
+
+	//Diagonals
+	//Two down right
+	if((row+2 <= MAXR) && (column+2 <= MAXC) 
+		&& (myBoard[row][column] == myBoard[row+1][column+1]) && (myBoard[row+1][column+1] == myBoard[row+2][column+2])){
+		//Check who won
+		if(myBoard[row][column] == 1){
+			toReturn = 10; //It was me
+		}
+		else if(myBoard[row][column] == -1){
+			toReturn = -10; //It was the oponent
+		}
+	}
+	//Two down left
+	if((row+2 <= MAXR) && (column-2 >= 0) 
+		&& (myBoard[row][column] == myBoard[row+1][column-1]) && (myBoard[row+1][column-1] == myBoard[row+2][column-2])){
+		//Check who won
+		if(myBoard[row][column] == 1){
+			toReturn = 10; //It was me
+		}
+		else if(myBoard[row][column] == -1){
+			toReturn = -10; //It was the oponent
+		}
+	}
+	//Two up right
+	if((row-2 >= 0) && (column+2 <= MAXC) 
+		&& (myBoard[row][column] == myBoard[row-1][column+1]) && (myBoard[row-1][column+1] == myBoard[row-2][column+2])){
+		//Check who won
+		if(myBoard[row][column] == 1){
+			toReturn = 10; //It was me
+		}
+		else if(myBoard[row][column] == -1){
+			toReturn = -10; //It was the oponent
+		}
+	}
+	//Two up left
+	if((row-2 >= 0) && (column-2 >= 0) 
+		&& (myBoard[row][column] == myBoard[row-1][column-1]) && (myBoard[row-1][column-1] == myBoard[row-2][column-2])){
+		//Check who won
+		if(myBoard[row][column] == 1){
+			toReturn = 10; //It was me
+		}
+		else if(myBoard[row][column] == -1){
+			toReturn = -10; //It was the oponent
+		}
+	}
+	//Others
+	if((row-1 >= 0) && (row+1 <= MAXR) && (column-1 >= 0) && (column+1 <= MAXC)){
+		//One up left, one down right
+		if((myBoard[row][column] == myBoard[row-1][column-1]) && (myBoard[row-1][column-1] == myBoard[row+1][column+1])){
+			//Check who won
+			if(myBoard[row][column] == 1){
+				toReturn = 10; //It was me
+			}
+			else if(myBoard[row][column] == -1){
+				toReturn = -10; //It was the oponent
+			}
+		}
+		//One down left, one up right
+		if((myBoard[row][column] == myBoard[row+1][column-1]) && (myBoard[row+1][column+1] == myBoard[row-1][column+1])){
+			//Check who won
+			if(myBoard[row][column] == 1){
+				toReturn = 10; //It was me
+			}
+			else if(myBoard[row][column] == -1){
+				toReturn = -10; //It was the oponent
+			}
+		}
+	}
+
+	//Check if the token is next to another one of yours, so add points
+	return toReturn;
+}
+
+/*
+static const int maximize(Board const& board, int** myBoard, int row, int column, int depth){
 	int worth = evaluate(board,myBoard,row,column); //This is the heuristic.
 
 	//If it plays on this position, it wins.
@@ -220,305 +334,240 @@ const int PlayerErick::maximize(Board const& board, int** myBoard, int row, int 
 				}
 				myBoard[r][c] = 0; //Remove token
 			}
-			else{
-				continue; //Maybe this isn't necessary
-			}
-			//Do some more things
 		}
 	}
 
 	return bestUtility; 
 }
+static const int minimize(Board const& board, int** myBoard, int row, int column, int depth){
+	int worth = evaluate(board, myBoard, row, column); //This is the heuristic
+	
+	//Check for TERMINAL STATES (the first two about the board, the other about the algorythm).
 
-const int PlayerErick::evaluate(Board const& board, int** const& myBoard, int row, int column){
-	/*
-	//Center
-	return 5;
-	//Next to one of yours
-	return 5;
-	//Wincon
-	return 10;
-	//Draw
-	return 0; //necesary?
-	*/
+	//If it plays on this position, it wins.
+	//Or the maximum depth has been reached, so it's the end of the search on that branch.
+	if((worth >= pointsForWin) || (depth >= maxDepth)){ 
+		return worth;
+	}
 
-	//Start of the code
+	//Check for a full board and not wincon, so it's a draw.
+	//Do not use the original board, use the copy!!!!!!!1!!11!
 	int MAXR = board.height();
 	int MAXC = board.width();
-	int toReturn = 0;
-
-	//Check wincon for row
-	if(column == 0){ //Leftmost col
-		//Only check two to the right
-		if((myBoard[row][column] == myBoard[row][column+1]) && (myBoard[row][column+1] == myBoard[row][column+2])){
-			//Check who won
-			if(myBoard[row][column] == 1){
-				toReturn = 10; //It was me
+	bool full = true;
+	for(size_t i=0; i<MAXR; i++){
+		for(size_t j=0; j<MAXR; j++){
+			if(myBoard[i][j] == 0){
+				full=false;
+				break;
 			}
-			else if(myBoard[row][column] == -1){
-				toReturn = -10; //It was the oponent
+		}
+		if(!full){
+			break;
+		}
+	}
+	if(full){
+		return 0;
+	}
+
+	//Keep looking because the current state of the game is not a leaf
+	
+	//Start of oponent path.
+	int worstUtility = INFINITY;
+	for(size_t r = 0; r < MAXR; r++){
+		for(size_t c = 0; c < MAXC; c++){
+			//Check if the coordinate is occupied or not.
+			if(myBoard[r][c] == 0){
+				//Play on that coordinate
+				myBoard[r][c] = -1;
+				//Get the worth value
+				worth = maximize(board, myBoard, r, c, depth+1);
+				if(worth < worstUtility){
+					worstUtility = worth;
+				}
+				//Do some more things
+				myBoard[r][c] = 0; //Remove token
 			}
 		}
 	}
-	else if(column == MAXC){ //Rightmost col
-		//Only check two to the left
-		if((myBoard[row][column] == myBoard[row][column-1]) && (myBoard[row][column-1] == myBoard[row][column-2])){
-			//Check who won
-			if(myBoard[row][column] == 1){
-				toReturn = 10; //It was me
-			}
-			else if(myBoard[row][column] == -1){
-				toReturn = -10; //It was the oponent
-			}
-		}
-	}
-	else{ //Both sides now
-		//One left-One right, Two left, Two right
+	
+	return worstUtility; 
+}
+*/
 
-		//Make all this a little more efficient
-		if((myBoard[row][column] == myBoard[row][column+1]) && (myBoard[row][column-1] == myBoard[row][column+1])){
-			//Check who won
-			if(myBoard[row][column] == 1){
-				toReturn = 10; //It was me
-			}
-			else if(myBoard[row][column] == -1){
-				toReturn = -10; //It was the oponent
-			}
-		}
+static int minimize_v2(Board const& board, int ** myBoard, int row, int column, int depth, bool isMaximizer){
+	int worth = evaluate(board, myBoard, row, column) - depth; //This is the heuristic
+	
+	//Check for TERMINAL STATES (the first two about the board, the other about the algorythm).
 
-		if((myBoard[row][column] == myBoard[row][column-1]) && (myBoard[row][column+1] == myBoard[row][column-2])){
-			//Check who won
-			if(myBoard[row][column] == 1){
-				toReturn = 10; //It was me
-			}
-			else if(myBoard[row][column] == -1){
-				toReturn = -10; //It was the oponent
-			}
-		}
-
-		if((myBoard[row][column] == myBoard[row][column+1]) && (myBoard[row][column+1] == myBoard[row][column+2])){
-			//Check who won
-			if(myBoard[row][column] == 1){
-				toReturn = 10; //It was me
-			}
-			else if(myBoard[row][column] == -1){
-				toReturn = -10; //It was the oponent
-			}
-		}
+	//If it plays on this position, it wins.
+	//Or the maximum depth has been reached, so it's the end of the search on that branch.
+	if((worth >= pointsForWin) || (depth >= maxDepth)){ 
+		return worth;
 	}
 
-	//Check wincon for column
-	if(row == 0){ //Upmost row
-		//Only check two to the bottom
-		if((myBoard[row][column] == myBoard[row+1][column]) && (myBoard[row+1][column] == myBoard[row+2][column])){
-			//Check who won
-			if(myBoard[row][column] == 1){
-				toReturn = 10; //It was me
+	//Check for a full board and not wincon, so it's a draw.
+	//Do not use the original board, use the copy!!!!!!!1!!11!
+	int MAXR = board.height();
+	int MAXC = board.width();
+	bool full = true;
+	for(size_t i=0; i<MAXR; i++){
+		for(size_t j=0; j<MAXR; j++){
+			if(myBoard[i][j] == 0){
+				full=false;
+				break;
 			}
-			else if(myBoard[row][column] == -1){
-				toReturn = -10; //It was the oponent
-			}
+		}
+		if(!full){
+			break;
 		}
 	}
-	else if(column == MAXC){ //Downmost row
-		//Only check two to the top
-		if((myBoard[row][column] == myBoard[row-1][column]) && (myBoard[row-1][column] == myBoard[row-2][column])){
-			//Check who won
-			if(myBoard[row][column] == 1){
-				toReturn = 10; //It was me
-			}
-			else if(myBoard[row][column] == -1){
-				toReturn = -10; //It was the oponent
-			}
-		}
-	}
-	else{ //Both sides now
-		//One up-One down, Two up, Two down
-
-		//Make all this a little more efficient
-		if((myBoard[row][column] == myBoard[row+1][column]) && (myBoard[row+1][column] == myBoard[row-1][column])){
-			//Check who won
-			if(myBoard[row][column] == 1){
-				toReturn = 10; //It was me
-			}
-			else if(myBoard[row][column] == -1){
-				toReturn = -10; //It was the oponent
-			}
-		}
-
-		if((myBoard[row][column] == myBoard[row-1][column]) && (myBoard[row-1][column] == myBoard[row-2][column])){
-			//Check who won
-			if(myBoard[row][column] == 1){
-				toReturn = 10; //It was me
-			}
-			else if(myBoard[row][column] == -1){
-				toReturn = -10; //It was the oponent
-			}
-		}
-
-		if((myBoard[row][column] == myBoard[row+1][column]) && (myBoard[row+1][column] == myBoard[row+2][column])){
-			//Check who won
-			if(myBoard[row][column] == 1){
-				toReturn = 10; //It was me
-			}
-			else if(myBoard[row][column] == -1){
-				toReturn = -10; //It was the oponent
-			}
-		}
+	if(full){
+		return 0;
 	}
 
-	//Diagonals
-	if((row == 0) && (column == 0)){
-		//Top left
-		if((myBoard[row][column] == myBoard[row+1][column+1]) && (myBoard[row+1][column+1] == myBoard[row+2][column+2])){
-			//Check who won
-			if(myBoard[row][column] == 1){
-				toReturn = 10; //It was me
-			}
-			else if(myBoard[row][column] == -1){
-				toReturn = -10; //It was the oponent
-			}
-		}
-	}
-	else if((row == 0) && (column == MAXC)){
-		//Top right
-		if((myBoard[row][column] == myBoard[row+1][column-1]) && (myBoard[row+1][column-1] == myBoard[row+2][column-2])){
-			//Check who won
-			if(myBoard[row][column] == 1){
-				toReturn = 10; //It was me
-			}
-			else if(myBoard[row][column] == -1){
-				toReturn = -10; //It was the oponent
+	//Keep looking because the current state of the game is not a leaf
+	int toReturn;
+	if(isMaximizer){
+		//Start of oponent path.
+		int worstUtility = INT_MAX;
+		for(size_t r = 0; r < MAXR; r++){
+			for(size_t c = 0; c < MAXC; c++){
+				//Check if the coordinate is occupied or not.
+				if(myBoard[r][c] == 0){
+					//Play on that coordinate
+					myBoard[r][c] = -1;
+					//Get the worth value
+					worth = minimize_v2(board, myBoard, r, c, depth+1, false);
+					if(worth < worstUtility){
+						worstUtility = worth;
+					}
+					//Do some more things
+					myBoard[r][c] = 0; //Remove token
+				}
 			}
 		}
-	}
-	else if((row == MAXR) && (column == 0)){
-		//Bottom left
-		if((myBoard[row][column] == myBoard[row-1][column+1]) && (myBoard[row-1][column+1] == myBoard[row-2][column+2])){
-			//Check who won
-			if(myBoard[row][column] == 1){
-				toReturn = 10; //It was me
-			}
-			else if(myBoard[row][column] == -1){
-				toReturn = -10; //It was the oponent
-			}
-		}
-	}
-	else if((row == MAXR) && (column == MAXC)){
-		//Bottom right
-		if((myBoard[row][column] == myBoard[row-1][column-1]) && (myBoard[row-1][column-1] == myBoard[row-2][column-2])){
-			//Check who won
-			if(myBoard[row][column] == 1){
-				toReturn = 10; //It was me
-			}
-			else if(myBoard[row][column] == -1){
-				toReturn = -10; //It was the oponent
-			}
-		}
+		toReturn = worstUtility;
 	}
 	else{
-		//Others: two right-down, one left-up one right-down, two left-up, two left-down, one left-down one right-up, two right-up 
-		if((myBoard[row][column] == myBoard[row+1][column+1]) && (myBoard[row+1][column+1] == myBoard[row+2][column+2])){
-			//Check who won
-			if(myBoard[row][column] == 1){
-				toReturn = 10; //It was me
-			}
-			else if(myBoard[row][column] == -1){
-				toReturn = -10; //It was the oponent
-			}
-		}
-
-		if((myBoard[row][column] == myBoard[row-1][column-1]) && (myBoard[row-1][column-1] == myBoard[row+1][column+1])){
-			//Check who won
-			if(myBoard[row][column] == 1){
-				toReturn = 10; //It was me
-			}
-			else if(myBoard[row][column] == -1){
-				toReturn = -10; //It was the oponent
+		int bestUtility = INT_MIN;
+		for(size_t r = 0; r < MAXR; r++){ //Care with this as it could be a bigger board.
+			for(size_t c = 0; c < MAXC; c++){ //Care with this as it could be a bigger board.
+				//Check if the coordinate is occupied or not.
+				if(myBoard[r][c] == 0){
+					//Play on that coordinate
+					myBoard[r][c] = 1;
+					//Get the worth value
+					worth = minimize_v2(board, myBoard, r, c, depth+1, true);
+					if(worth > bestUtility){
+						bestUtility = worth; 
+					}
+					myBoard[r][c] = 0; //Remove token
+				}
 			}
 		}
-
-		if((myBoard[row][column] == myBoard[row-1][column-1]) && (myBoard[row-1][column-1] == myBoard[row-2][column-2])){
-			//Check who won
-			if(myBoard[row][column] == 1){
-				toReturn = 10; //It was me
-			}
-			else if(myBoard[row][column] == -1){
-				toReturn = -10; //It was the oponent
-			}
-		}
-
-		if((myBoard[row][column] == myBoard[row+1][column-1]) && (myBoard[row+1][column-1] == myBoard[row+2][column-2])){
-			//Check who won
-			if(myBoard[row][column] == 1){
-				toReturn = 10; //It was me
-			}
-			else if(myBoard[row][column] == -1){
-				toReturn = -10; //It was the oponent
-			}
-		}
-
-		if((myBoard[row][column] == myBoard[row+1][column-1]) && (myBoard[row+1][column-1] == myBoard[row-1][column+1])){
-			//Check who won
-			if(myBoard[row][column] == 1){
-				toReturn = 10; //It was me
-			}
-			else if(myBoard[row][column] == -1){
-				toReturn = -10; //It was the oponent
-			}
-		}
-
-		if((myBoard[row][column] == myBoard[row-1][column+1]) && (myBoard[row-1][column+1] == myBoard[row-2][column+2])){
-			//Check who won
-			if(myBoard[row][column] == 1){
-				toReturn = 10; //It was me
-			}
-			else if(myBoard[row][column] == -1){
-				toReturn = -10; //It was the oponent
-			}
-		}
+		toReturn = bestUtility;
 	}
-
-	//Check if the token is next to another one of yours, so add points
-	return toReturn;
-
+	
+	return toReturn; 
 }
 
-int** PlayerErick::copyBoard(Board const& board){
-	//int myBoard[MAXR][MAXC];
+static Coordinates minimax(Board const& board){
+	
+	//Set utility variables.
+	Coordinates bestCoordinate;
+	int worth;
+	int bestUtility = INT_MIN;
+	int depth = 0;
 	int MAXR = board.height();
 	int MAXC = board.width();
+	bestCoordinate.x = MAXC/2;
+	bestCoordinate.y = MAXR/2; 
 
-	int ** myBoard = new int*[MAXR];
+	//Copy the current state of the board (before playing).
+	int ** myBoard = copyBoard(board);
+
+	//The board here is a matrix where you can put a token anywhere that's not occupied.
+	//Considering that, we need to roam for all the posible places to check their worth value, and select the best one.
 	for(size_t r = 0; r < MAXR; r++){
-		myBoard[r] = new int[MAXC];
 		for(size_t c = 0; c < MAXC; c++){
-			//Copy everything into an int matrix
-			Coordinates coords;
-			coords.x = c;
-			coords.y = r;
-			if(!board.tile(coords)->owner().has_value()){
-				myBoard[r][c] = 0; //It's empty.
-			}
-			else if(board.tile(coords)->owner()->get().name() == "Erick"){
-				myBoard[r][c] = 1; //It's mine.
-			}
-			else{
-				myBoard[r][c] = -1; //It's not mine.
+			//Check if the coordinate is occupied or not.
+			if(myBoard[r][c] == 0){
+				//Play on that coordinate
+				myBoard[r][c] = 1;
+				//Get the worth value
+				worth = minimize_v2(board, myBoard, r, c, depth, true);
+				if(worth > bestUtility){
+					bestUtility = worth;
+					bestCoordinate.x = c;
+					bestCoordinate.y = r; 
+				}
+				myBoard[r][c] = 0; //Remove token
 			}
 		}
 	}
-	return myBoard;
+
+	//Free the memory cells
+	for(int i = 0; i < board.height(); i++){
+		delete [] myBoard[i];
+	}
+	delete [] myBoard;
+
+	//Debugging
+	std::cout << "\n" << "worth=" << worth << "\n" << "coords=(" << bestCoordinate.x << "," << bestCoordinate.y << ")\n";
+	return bestCoordinate;
+
 }
 
-void PlayerErick::printBoard(int** const& myBoard){
-	std::cout << std::endl;
-	for(size_t i=0; i < 3; i++){
-		for(size_t j=0; j < 3; j++){
-			std::cout << myBoard[i][j] << " | ";
+
+static Coordinates play(Board const& board)
+{
+	if (board.valid())
+	{
+		//My part
+		return minimax(board);
+
+		/*
+		//Didi's
+		Coordinates coords = randomCoordinate(board);
+		while ((board.tile(coords) == nullptr) || board.tile(coords)->owner().has_value())
+		{
+			coords = randomCoordinate(board);
 		}
-		std::cout << std::endl;
+		return coords;
+		*/
 	}
+
+	return { 0, 0 };
+}
+
+PlayerErick::PlayerErick():
+	mName("Erick")
+{
+}
+
+std::string const& PlayerErick::name() const
+{
+	return mName;
+}
+
+Coordinates PlayerErick::play(Board const& board) const
+{
+	//My part
+	//Debugging
+	/*
+	int ** myBoard = copyBoard(board);
+	printBoard(myBoard);
+	for(int i = 0; i < board.height(); i++){
+		delete [] myBoard[i];
+	}
+	delete [] myBoard;
+	*/
+
+	//return ttt::minimax(board);
+
+	//Didi's
+	return ttt::play(board);
 }
 
 } // namespace ttt

@@ -25,7 +25,7 @@
 
 #pragma once
 
-#include "../include/IPlayer.h"
+#include "IPlayer.h"
 
 namespace ttt
 {
