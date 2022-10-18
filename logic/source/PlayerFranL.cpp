@@ -80,7 +80,13 @@ namespace ttt
 	Coordinates PlayerFranL::finish_off(Board const& board, Coordinates const& excpt) const{
 		auto testboard = copyboard(board);
 		
-		return finish_off_array(testboard, board.height(), board.width(), board.winCondition(), excpt);
+		Coordinates coords= finish_off_array(testboard, board.height(), board.width(), board.winCondition(), excpt);
+		for (int i = 0; i < board.width(); i++)
+		{
+			delete[] testboard[i];
+		}
+		delete[] testboard;
+		return coords;
 	}
 
 	//Take a board from the competition, make a simplified copy to analyze. If there's a move  that results in victory for the opponent, returns its coordinates.
@@ -88,7 +94,13 @@ namespace ttt
 	//Optionally accepts a Coordinate to ignore (important for fork detection)
 	Coordinates PlayerFranL::defend(Board const& board, Coordinates const& excpt) const{
 		auto testboard = copyboard(board);
-		return defend_array(testboard, board.height(), board.width(), board.winCondition(), excpt);
+		Coordinates coords= defend_array(testboard, board.height(), board.width(), board.winCondition(), excpt);
+		for (int i = 0; i < board.width(); i++)
+		{
+			delete[] testboard[i];
+		}
+		delete[] testboard;
+		return coords;
 	}
 
 
@@ -111,6 +123,11 @@ namespace ttt
 						coords = finish_off_array(tempboard, board.height(), board.width(), board.winCondition(),coords);
 						if (coords.x != -1)
 						{
+							for (int i = 0; i < board.width(); i++)
+							{
+								delete[] tempboard[i];
+							}
+							delete[] tempboard;
 							return { i,j };
 						}
 					}
@@ -120,6 +137,11 @@ namespace ttt
 				}
 			}
 		}
+		for (int i = 0; i < board.width(); i++)
+		{
+			delete[] tempboard[i];
+		}
+		delete[] tempboard;
 		return { -1,-1 };
 	}
 
@@ -142,6 +164,11 @@ namespace ttt
 						coords = defend_array(tempboard, board.height(), board.width(), board.winCondition(), coords);
 						if (coords.x != -1)
 						{
+							for (int i = 0; i < board.width(); i++)
+							{
+								delete[] tempboard[i];
+							}
+							delete[] tempboard;
 							return { i,j };
 						}
 					}
@@ -151,6 +178,11 @@ namespace ttt
 				}
 			}
 		}
+		for (int i = 0; i < board.width(); i++)
+		{
+			delete[] tempboard[i];
+		}
+		delete[] tempboard;
 		return { -1,-1 };
 	}
 
@@ -233,6 +265,11 @@ namespace ttt
 							coords = finish_off_array(tempboard, board.height(), board.width(), board.winCondition());
 							if (coords.x != -1)
 							{
+								for (int i = 0; i < board.width(); i++)
+								{
+									delete[] tempboard[i];
+								}
+								delete[] tempboard;
 								return { i,j };
 							}
 
@@ -248,7 +285,13 @@ namespace ttt
 					coords = { std::rand() % board.width(), std::rand() % board.height() };
 				}
 
+
 			}
+			for (int i = 0; i < board.width(); i++)
+			{
+				delete[] tempboard[i];
+			}
+			delete[] tempboard;
 			return coords;
 		}
 
@@ -386,6 +429,24 @@ namespace ttt
 				}
 
 			}
+			//If no ending move was found after recursion, return a valid move as a sanity check.
+			if (lowest_depth == 9999)
+			{
+				for (int i = 0; i < wincon; i++)
+				{
+					{
+						for (int j = 0; j < wincon; j++)
+						{
+							if (board[i][j] == 0)
+							{
+								coords = { i,j };
+							}
+						}
+					}
+
+				}
+			}
+
 		}
 		else
 		{
