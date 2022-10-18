@@ -13,8 +13,8 @@ namespace ttt
 
 
 	//Constructor
-	PlayerFranL::PlayerFranL(std::string const& name, int max_len, int min_marks) :
-		mName(name), mMax_len(max_len), mMin_marks(min_marks)
+	PlayerFranL::PlayerFranL(std::string const& name, int max_len, int min_marks, int max_depth) :
+		mName(name), mMax_len(max_len), mMin_marks(min_marks), mMax_depth(max_depth)
 	{
 	}
 	//name getter
@@ -27,9 +27,9 @@ namespace ttt
 	//If no such move exists, returns {-1,-1} instead
 	//Optionally accepts a Coordinate to ignore (important for fork detection)
 	Coordinates PlayerFranL::finish_off_array(int** board, int const height, int const width, int const winCondition, Coordinates const& excpt) const {
-		for (int i = 0; i < width; i++)
+		for (int i = 0; i < height; i++)
 		{
-			for (int j = 0; j < height; j++)
+			for (int j = 0; j < width; j++)
 			{
 				if (i != excpt.x && j != excpt.y)
 				{
@@ -52,9 +52,9 @@ namespace ttt
 	//If no such move exists, returns {-1,-1} instead
 	//Optionally accepts a Coordinate to ignore (important for fork detection)
 	Coordinates PlayerFranL::defend_array(int** board, int const height, int const width, int const winCondition, Coordinates const& excpt) const {
-		for (int i = 0; i < width; i++)
+		for (int i = 0; i < height; i++)
 		{
-			for (int j = 0; j < height; j++)
+			for (int j = 0; j < width; j++)
 			{
 				if (i != excpt.x && j != excpt.y)
 				{
@@ -110,9 +110,9 @@ namespace ttt
 	Coordinates PlayerFranL::fork(Board const& board) const{
 		auto tempboard = copyboard(board);
 		Coordinates coords;
-		for (int i = 0; i < board.width(); i++)
+		for (int i = 0; i < board.height(); i++)
 		{
-			for (int j = 0; j < board.height(); j++)
+			for (int j = 0; j < board.width(); j++)
 			{
 				if (tempboard[i][j] == 0) {
 					tempboard[i][j] = 1;
@@ -151,9 +151,9 @@ namespace ttt
 	Coordinates PlayerFranL::de_fork(Board const& board) const{
 		auto tempboard = copyboard(board);
 		Coordinates coords;
-		for (int i = 0; i < board.width(); i++)
+		for (int i = 0; i < board.height(); i++)
 		{
-			for (int j = 0; j < board.height(); j++)
+			for (int j = 0; j < board.width(); j++)
 			{
 				if (tempboard[i][j] == 0) {
 					tempboard[i][j] = 1;
@@ -191,7 +191,7 @@ namespace ttt
 		if (board.valid())
 		{
 			auto tempboard = copyboard(board);
-			Coordinates coords;
+			Coordinates coords={-1,-1};
 			
 
 			bool available_theaters = false;
@@ -208,9 +208,9 @@ namespace ttt
 					smalltempboard[i] = new int[board.winCondition()];
 				}
 				
-				for (int offsetX = 0; offsetX < (board.width() - board.winCondition()); offsetX++)
+				for (int offsetX = 0; offsetX < (board.height() - board.winCondition()); offsetX++)
 				{
-					for (int offsetY = 0; offsetY < (board.height() - board.winCondition()); offsetY++)
+					for (int offsetY = 0; offsetY < (board.width() - board.winCondition()); offsetY++)
 					{
 						for (int i = 0; i < board.winCondition(); i++)
 						{
@@ -307,23 +307,23 @@ namespace ttt
 			//Tactics Layer
 			Coordinates coords = finish_off(board);
 			if (coords.x != (-1))
-				return coords;
+				return { coords.y,coords.x };
 
 			coords = defend(board);
 			if (coords.x != (-1))
-				return coords;
+				return { coords.y,coords.x };
 
 			coords = fork(board);
 			if (coords.x != (-1))
-				return coords;
+				return { coords.y,coords.x };
 
 			coords = de_fork(board);
 			if (coords.x != (-1))
-				return coords;
+				return { coords.y,coords.x };
 
 			//Strategic Layer, more costly
 			coords = PlayerFranL::strategize(board);
-			return coords;
+			return {coords.y,coords.x};
 		}
 
 		return { 0, 0 };
@@ -337,9 +337,9 @@ namespace ttt
 			array[i] = new int[board.width()];
 			for (int j = 0; j < board.width(); j++)
 			{
-				if (board.tile({ i,j })->owner().has_value())
+				if (board.tile({ j,i })->owner().has_value())
 				{
-					if (board.tile({ i,j })->owner().value().get().name() == this->name()) {
+					if (board.tile({ j,i })->owner().value().get().name() == this->name()) {
 						array[i][j]=1;
 					}
 					else
@@ -359,9 +359,9 @@ namespace ttt
 	//Check if player currentplayer will win in the current boardstate, returns true if currentplayer has won in board, false otherwise.
 	bool PlayerFranL::willwin(int currentplayer, int** const& board,int width, int height, int wincon) const {
 
-		for (int x = 0; x < width; x++)
+		for (int x = 0; x < height; x++)
 		{
-			for (int y = 0; y < height; y++)
+			for (int y = 0; y < width; y++)
 			{
 				int vertical = 1;
 				int horizontal = 1;
@@ -404,33 +404,12 @@ namespace ttt
 
 
 	//Recursive funcion that scans a winning move from a wincon x wincon sized board
-	PlayerFranL::next_move PlayerFranL::evaluateboard(int** & board, int wincon, int depth, Coordinates const last_move) const {
-		Coordinates coords=last_move;
+	PlayerFranL::next_move PlayerFranL::evaluateboard(int**& board, int wincon, int depth, Coordinates const last_move) const {
+		Coordinates coords = last_move;
 		int lowest_depth = 9999;
-		if (last_move.x == -1)
+		//If no valid move was found after mMax_depth searches, return a random valid move
+		if (depth > mMax_depth)
 		{
-			for (int i = 0; i < wincon; i++)
-			{
-				{
-					for (int j = 0; j < wincon; j++)
-					{
-						if (board[i][j] == 0)
-						{
-							board[i][j] = 1;
-							PlayerFranL::next_move boardevaluation = evaluateboard(board, wincon, depth + 1, { i,j });
-							if (boardevaluation.depth < lowest_depth)
-							{
-								coords = boardevaluation.coords;
-								lowest_depth = boardevaluation.depth;
-							}
-							board[i][j] = 0;
-						}
-					}
-				}
-
-			}
-			//If no ending move was found after recursion, return a valid move as a sanity check.
-			if (lowest_depth == 9999)
 			{
 				for (int i = 0; i < wincon; i++)
 				{
@@ -439,25 +418,38 @@ namespace ttt
 						{
 							if (board[i][j] == 0)
 							{
-								coords = { i,j };
+								return { 1000, { i,j } };
 							}
 						}
 					}
 
 				}
-			}
 
-		}
-		else
-		{
-			if (depth % 2 == 0)
+			}
+			if (last_move.x == -1)
 			{
-				if (willwin(1, board, wincon, wincon, wincon))
+				for (int i = 0; i < wincon; i++)
 				{
-					coords = last_move;
-					lowest_depth = depth;
+					{
+						for (int j = 0; j < wincon; j++)
+						{
+							if (board[i][j] == 0)
+							{
+								board[i][j] = 1;
+								PlayerFranL::next_move boardevaluation = evaluateboard(board, wincon, depth + 1, { i,j });
+								if (boardevaluation.depth < lowest_depth)
+								{
+									coords = boardevaluation.coords;
+									lowest_depth = boardevaluation.depth;
+								}
+								board[i][j] = 0;
+							}
+						}
+					}
+
 				}
-				else
+				//If no ending move was found after recursion, return a valid move as a sanity check.
+				if (lowest_depth == 9999)
 				{
 					for (int i = 0; i < wincon; i++)
 					{
@@ -466,58 +458,85 @@ namespace ttt
 							{
 								if (board[i][j] == 0)
 								{
-									board[i][j] = 1;
-									PlayerFranL::next_move boardevaluation = evaluateboard(board, wincon, depth + 1, { i,j });
-									if (boardevaluation.depth < lowest_depth)
-									{
-										coords = boardevaluation.coords;
-										lowest_depth = boardevaluation.depth;
-									}
-									board[i][j] = 0;
+									coords = { i,j };
 								}
 							}
 						}
 
 					}
-
 				}
+
 			}
 			else
 			{
-				if (willwin(-1, board, wincon, wincon, wincon))
+				if (depth % 2 == 0)
 				{
-					lowest_depth = 1000-depth;
-					coords = last_move;
-				}
-				else
-				{
-					lowest_depth = 0;
-					for (int i = 0; i < wincon; i++)
+					if (willwin(1, board, wincon, wincon, wincon))
 					{
+						coords = last_move;
+						lowest_depth = depth;
+					}
+					else
+					{
+						for (int i = 0; i < wincon; i++)
 						{
-							for (int j = 0; j < wincon; j++)
 							{
-								if (board[i][j] == 0)
+								for (int j = 0; j < wincon; j++)
 								{
-									board[i][j] = -1;
-									PlayerFranL::next_move boardevaluation = evaluateboard(board, wincon, depth + 1, { i,j });
-									if (boardevaluation.depth > lowest_depth)
+									if (board[i][j] == 0)
 									{
-										coords = boardevaluation.coords;
-										lowest_depth = boardevaluation.depth;
+										board[i][j] = 1;
+										PlayerFranL::next_move boardevaluation = evaluateboard(board, wincon, depth + 1, { i,j });
+										if (boardevaluation.depth < lowest_depth)
+										{
+											coords = boardevaluation.coords;
+											lowest_depth = boardevaluation.depth;
+										}
+										board[i][j] = 0;
 									}
-									board[i][j] = 0;
 								}
 							}
+
 						}
 
 					}
 				}
+				else
+				{
+					if (willwin(-1, board, wincon, wincon, wincon))
+					{
+						lowest_depth = 1000 - depth;
+						coords = last_move;
+					}
+					else
+					{
+						lowest_depth = 0;
+						for (int i = 0; i < wincon; i++)
+						{
+							{
+								for (int j = 0; j < wincon; j++)
+								{
+									if (board[i][j] == 0)
+									{
+										board[i][j] = -1;
+										PlayerFranL::next_move boardevaluation = evaluateboard(board, wincon, depth + 1, { i,j });
+										if (boardevaluation.depth > lowest_depth)
+										{
+											coords = boardevaluation.coords;
+											lowest_depth = boardevaluation.depth;
+										}
+										board[i][j] = 0;
+									}
+								}
+							}
 
+						}
+					}
+
+				}
 			}
+			return { lowest_depth,coords };
 		}
-		return { lowest_depth,coords };
 	}
-
 
 } // namespace ttt
