@@ -99,25 +99,33 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 	//Check wincon for row
 	if(column == 0){ //Leftmost col
 		//Only check two to the right
-		if((myBoard[row][column] == myBoard[row][column+1]) && (myBoard[row][column+1] == myBoard[row][column+2])){
+		if((myBoard[row][column+1] == myBoard[row][column+2])){
 			//Check who won
-			if(myBoard[row][column] == 1){
+			if((myBoard[row][column] == 1) && (myBoard[row][column] == myBoard[row][column+1])){
 				toReturn = 10; //It was me
 			}
-			else if(myBoard[row][column] == -1){
+			else if((myBoard[row][column] == -1) && (myBoard[row][column] == myBoard[row][column+1])){
 				toReturn = -10; //It was the oponent
+			}
+			else{
+				//Prevented the oponent's victory
+				toReturn = 9;
 			}
 		}
 	}
 	else if(column == MAXC){ //Rightmost col
 		//Only check two to the left
-		if((myBoard[row][column] == myBoard[row][column-1]) && (myBoard[row][column-1] == myBoard[row][column-2])){
+		if((myBoard[row][column-1] == myBoard[row][column-2])){
 			//Check who won
-			if(myBoard[row][column] == 1){
+			if((myBoard[row][column] == 1)&&(myBoard[row][column] == myBoard[row][column-1])){
 				toReturn = 10; //It was me
 			}
-			else if(myBoard[row][column] == -1){
+			else if((myBoard[row][column] == -1)&&(myBoard[row][column] == myBoard[row][column-1])){
 				toReturn = -10; //It was the oponent
+			}
+			else{
+				//Prevented the oponent's victory
+				toReturn = 9;
 			}
 		}
 	}
@@ -125,33 +133,45 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 		//One left-One right, Two left, Two right
 
 		//Make all this a little more efficient
-		if((myBoard[row][column] == myBoard[row][column+1]) && (myBoard[row][column-1] == myBoard[row][column+1])){
+		if((myBoard[row][column-1] == myBoard[row][column+1])){
 			//Check who won
-			if(myBoard[row][column] == 1){
+			if((myBoard[row][column] == 1)&&(myBoard[row][column] == myBoard[row][column+1])){
 				toReturn = 10; //It was me
 			}
-			else if(myBoard[row][column] == -1){
+			else if((myBoard[row][column] == -1)&&(myBoard[row][column] == myBoard[row][column+1])){
 				toReturn = -10; //It was the oponent
+			}
+			else{
+				//Prevented the oponent's victory
+				toReturn = 9;
 			}
 		}
 
-		if((column-2 >= 0) && (myBoard[row][column] == myBoard[row][column-1]) && (myBoard[row][column+1] == myBoard[row][column-2])){
+		if((column-2 >= 0) && (myBoard[row][column-1] == myBoard[row][column-2])){
 			//Check who won
-			if(myBoard[row][column] == 1){
+			if((myBoard[row][column] == myBoard[row][column-1]) && (myBoard[row][column] == 1)){
 				toReturn = 10; //It was me
 			}
-			else if(myBoard[row][column] == -1){
+			else if((myBoard[row][column] == myBoard[row][column-1]) && (myBoard[row][column] == -1)){
 				toReturn = -10; //It was the oponent
+			}
+			else{
+				//Prevented the oponent's victory
+				toReturn = 9;
 			}
 		}
 
-		if((column+2 <= MAXC)&&(myBoard[row][column] == myBoard[row][column+1]) && (myBoard[row][column+1] == myBoard[row][column+2])){
+		if((column+2 <= MAXC)&&(myBoard[row][column+1] == myBoard[row][column+2])){
 			//Check who won
-			if(myBoard[row][column] == 1){
+			if((myBoard[row][column] == myBoard[row][column+1]) && (myBoard[row][column] == 1)){
 				toReturn = 10; //It was me
 			}
-			else if(myBoard[row][column] == -1){
+			else if((myBoard[row][column] == myBoard[row][column+1]) && (myBoard[row][column] == -1)){
 				toReturn = -10; //It was the oponent
+			}
+			else{
+				//Prevented the oponent's victory
+				toReturn = 9;
 			}
 		}
 	}
@@ -286,116 +306,31 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 	}
 
 	//Check if the token is next to another one of yours, so add points
+	for(size_t i=row-1; i <= row+1; i++){
+		for(size_t j=column-1; j <= column+1; j++){
+			if((i==row) && (j==column)){
+				continue;
+			}
+			if((i>=0)&&(i<=MAXR)&&(j>=0)&&(j<=MAXC)){ //Check limits
+				if(myBoard[i][j]==1){
+					toReturn+=5;
+					break;
+				}
+				else if(myBoard[i][j]==-1){
+					toReturn-=5;
+					break;
+				}
+			}
+		}
+	}
+
+	//Check if you're preventing the oponent's victory
+
+
 	return toReturn;
 }
 
-/*
-static const int maximize(Board const& board, int** myBoard, int row, int column, int depth){
-	int worth = evaluate(board,myBoard,row,column); //This is the heuristic.
-
-	//If it plays on this position, it wins.
-	//Or the maximum depth has been reached, so it's the end of the search on that branch.
-	if((worth >= pointsForWin) || (depth >= maxDepth)){ 
-		return -worth; //Needs to be negative because the nature of the game
-	}
-
-	//Check if the board is full and no one won
-	int MAXR = board.height();
-	int MAXC = board.width();
-	bool full = true;
-	for(size_t i=0; i<MAXR; i++){
-		for(size_t j=0; j<MAXR; j++){
-			if(myBoard[i][j] == 0){
-				full=false;
-				break;
-			}
-		}
-		if(!full){
-			break;
-		}
-	}
-	if(full){ //Draw
-		return 0;
-	}
-
-	//Keep looking because the current state of the game is not a leaf
-
-	int bestUtility = -INFINITY;
-	for(size_t r = 0; r < MAXR; r++){ //Care with this as it could be a bigger board.
-		for(size_t c = 0; c < MAXC; c++){ //Care with this as it could be a bigger board.
-			//Check if the coordinate is occupied or not.
-			if(myBoard[r][c] == 0){
-				//Play on that coordinate
-				myBoard[r][c] = 1;
-				//Get the worth value
-				worth = minimize(board, myBoard, r, c, depth);
-				if(worth > bestUtility){
-					bestUtility = worth; 
-				}
-				myBoard[r][c] = 0; //Remove token
-			}
-		}
-	}
-
-	return bestUtility; 
-}
-static const int minimize(Board const& board, int** myBoard, int row, int column, int depth){
-	int worth = evaluate(board, myBoard, row, column); //This is the heuristic
-	
-	//Check for TERMINAL STATES (the first two about the board, the other about the algorythm).
-
-	//If it plays on this position, it wins.
-	//Or the maximum depth has been reached, so it's the end of the search on that branch.
-	if((worth >= pointsForWin) || (depth >= maxDepth)){ 
-		return worth;
-	}
-
-	//Check for a full board and not wincon, so it's a draw.
-	//Do not use the original board, use the copy!!!!!!!1!!11!
-	int MAXR = board.height();
-	int MAXC = board.width();
-	bool full = true;
-	for(size_t i=0; i<MAXR; i++){
-		for(size_t j=0; j<MAXR; j++){
-			if(myBoard[i][j] == 0){
-				full=false;
-				break;
-			}
-		}
-		if(!full){
-			break;
-		}
-	}
-	if(full){
-		return 0;
-	}
-
-	//Keep looking because the current state of the game is not a leaf
-	
-	//Start of oponent path.
-	int worstUtility = INFINITY;
-	for(size_t r = 0; r < MAXR; r++){
-		for(size_t c = 0; c < MAXC; c++){
-			//Check if the coordinate is occupied or not.
-			if(myBoard[r][c] == 0){
-				//Play on that coordinate
-				myBoard[r][c] = -1;
-				//Get the worth value
-				worth = maximize(board, myBoard, r, c, depth+1);
-				if(worth < worstUtility){
-					worstUtility = worth;
-				}
-				//Do some more things
-				myBoard[r][c] = 0; //Remove token
-			}
-		}
-	}
-	
-	return worstUtility; 
-}
-*/
-
-static int minimize_v2(Board const& board, int ** myBoard, int row, int column, int depth, bool isMaximizer){
+static int searchPlay(Board const& board, int ** myBoard, int row, int column, int depth, bool isMaximizer){
 	int worth = evaluate(board, myBoard, row, column) - depth; //This is the heuristic
 	
 	//Check for TERMINAL STATES (the first two about the board, the other about the algorythm).
@@ -438,7 +373,7 @@ static int minimize_v2(Board const& board, int ** myBoard, int row, int column, 
 					//Play on that coordinate
 					myBoard[r][c] = -1;
 					//Get the worth value
-					worth = minimize_v2(board, myBoard, r, c, depth+1, false);
+					worth = searchPlay(board, myBoard, r, c, depth+1, false);
 					if(worth < worstUtility){
 						worstUtility = worth;
 					}
@@ -458,7 +393,7 @@ static int minimize_v2(Board const& board, int ** myBoard, int row, int column, 
 					//Play on that coordinate
 					myBoard[r][c] = 1;
 					//Get the worth value
-					worth = minimize_v2(board, myBoard, r, c, depth+1, true);
+					worth = searchPlay(board, myBoard, r, c, depth+1, true);
 					if(worth > bestUtility){
 						bestUtility = worth; 
 					}
@@ -496,7 +431,7 @@ static Coordinates minimax(Board const& board){
 				//Play on that coordinate
 				myBoard[r][c] = 1;
 				//Get the worth value
-				worth = minimize_v2(board, myBoard, r, c, depth, true);
+				worth = searchPlay(board, myBoard, r, c, depth, true);
 				if(worth > bestUtility){
 					bestUtility = worth;
 					bestCoordinate.x = c;
