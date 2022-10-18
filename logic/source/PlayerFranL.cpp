@@ -418,7 +418,7 @@ namespace ttt
 						{
 							if (board[i][j] == 0)
 							{
-								return { 1000, { i,j } };
+								return { 9999, { i,j } };
 							}
 						}
 					}
