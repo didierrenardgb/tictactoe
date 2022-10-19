@@ -77,7 +77,7 @@ static void release(Spot** myBoard, int width)
 	{
 		for (int i{ 0 }; i < width; i++)
 			delete[]myBoard[i];
-		delete myBoard;
+		delete[] myBoard;
 		myBoard = nullptr;
 	}
 }
@@ -228,6 +228,7 @@ std::string const& PlayerFede::name() const
 }
 Coordinates PlayerFede::play(Board const& board) const
 {
+	_CrtDumpMemoryLeaks();
 	return ttt::play(board, *this);
 }
 
