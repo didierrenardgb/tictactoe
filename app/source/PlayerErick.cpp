@@ -96,7 +96,9 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 		toReturn = 7;
 	}
 
-	//Check wincon for row
+	//Check if you're preventing the oponent's victory DONE (in between the checks for wincon).
+	
+	//Check wincon for row DONE.
 	if(column == 0){ //Leftmost col
 		//Only check two to the right
 		if((myBoard[row][column+1] == myBoard[row][column+2])){
@@ -176,28 +178,36 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 		}
 	}
 
-	//Check wincon for column
+	//Check wincon for column DONE.
 	if(row == 0){ //Upmost row
 		//Only check two to the bottom
-		if((myBoard[row][column] == myBoard[row+1][column]) && (myBoard[row+1][column] == myBoard[row+2][column])){
+		if(myBoard[row+1][column] == myBoard[row+2][column]){
 			//Check who won
-			if(myBoard[row][column] == 1){
+			if((myBoard[row][column] == 1)&&(myBoard[row][column] == myBoard[row+1][column])){
 				toReturn = 10; //It was me
 			}
-			else if(myBoard[row][column] == -1){
+			else if((myBoard[row][column] == -1)&&(myBoard[row][column] == myBoard[row+1][column])){
 				toReturn = -10; //It was the oponent
+			}
+			else{
+				//Prevented the oponent's victory
+				toReturn = 9;
 			}
 		}
 	}
 	else if(row == MAXR){ //Downmost row
 		//Only check two to the top
-		if((myBoard[row][column] == myBoard[row-1][column]) && (myBoard[row-1][column] == myBoard[row-2][column])){
+		if(myBoard[row-1][column] == myBoard[row-2][column]){
 			//Check who won
-			if(myBoard[row][column] == 1){
+			if((myBoard[row][column] == 1)&&(myBoard[row][column] == myBoard[row-1][column])){
 				toReturn = 10; //It was me
 			}
-			else if(myBoard[row][column] == -1){
+			else if((myBoard[row][column] == -1)&&(myBoard[row][column] == myBoard[row-1][column])){
 				toReturn = -10; //It was the oponent
+			}
+			else{
+				//Prevented the oponent's victory
+				toReturn = 9;
 			}
 		}
 	}
@@ -205,101 +215,133 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 		//One up-One down, Two up, Two down
 
 		//Make all this a little more efficient
-		if((myBoard[row][column] == myBoard[row+1][column]) && (myBoard[row+1][column] == myBoard[row-1][column])){
+		if(myBoard[row+1][column] == myBoard[row-1][column]){
 			//Check who won
-			if(myBoard[row][column] == 1){
+			if((myBoard[row][column] == 1)&&(myBoard[row][column] == myBoard[row+1][column])){
 				toReturn = 10; //It was me
 			}
-			else if(myBoard[row][column] == -1){
+			else if((myBoard[row][column] == -1)&&(myBoard[row][column] == myBoard[row+1][column])){
 				toReturn = -10; //It was the oponent
+			}
+			else{
+				//Prevented the oponent's victory
+				toReturn = 9;				
 			}
 		}
 
-		if((row-2 >= 0) && (myBoard[row][column] == myBoard[row-1][column]) && (myBoard[row-1][column] == myBoard[row-2][column])){
+		if((row-2 >= 0) && (myBoard[row-1][column] == myBoard[row-2][column])){
 			//Check who won
-			if(myBoard[row][column] == 1){
+			if((myBoard[row][column] == 1)&&(myBoard[row][column] == myBoard[row-1][column])){
 				toReturn = 10; //It was me
 			}
-			else if(myBoard[row][column] == -1){
+			else if((myBoard[row][column] == -1)&&(myBoard[row][column] == myBoard[row-1][column])){
 				toReturn = -10; //It was the oponent
+			}
+			else{
+				//Prevented the oponent's victory
+				toReturn = 9;
 			}
 		}
 
-		if((row+2 <= MAXR) && (myBoard[row][column] == myBoard[row+1][column]) && (myBoard[row+1][column] == myBoard[row+2][column])){
+		if((row+2 <= MAXR) && (myBoard[row+1][column] == myBoard[row+2][column])){
 			//Check who won
-			if(myBoard[row][column] == 1){
+			if((myBoard[row][column] == 1)&&(myBoard[row][column] == myBoard[row+1][column])){
 				toReturn = 10; //It was me
 			}
-			else if(myBoard[row][column] == -1){
+			else if((myBoard[row][column] == -1)&&(myBoard[row][column] == myBoard[row+1][column])){
 				toReturn = -10; //It was the oponent
+			}
+			else{
+				//Prevented the oponent's victory
+				toReturn = 9;
 			}
 		}
 	}
 
-	//Diagonals
+	//Diagonals DONE.
 	//Two down right
 	if((row+2 <= MAXR) && (column+2 <= MAXC) 
-		&& (myBoard[row][column] == myBoard[row+1][column+1]) && (myBoard[row+1][column+1] == myBoard[row+2][column+2])){
+		&& (myBoard[row+1][column+1] == myBoard[row+2][column+2])){
 		//Check who won
-		if(myBoard[row][column] == 1){
+		if((myBoard[row][column] == 1) && (myBoard[row][column] == myBoard[row+1][column+1])) {
 			toReturn = 10; //It was me
 		}
-		else if(myBoard[row][column] == -1){
+		else if((myBoard[row][column] == -1) && (myBoard[row][column] == myBoard[row+1][column+1])){
 			toReturn = -10; //It was the oponent
+		}
+		else{
+			//Prevented the oponent's victory
+			toReturn = 9;
 		}
 	}
 	//Two down left
 	if((row+2 <= MAXR) && (column-2 >= 0) 
-		&& (myBoard[row][column] == myBoard[row+1][column-1]) && (myBoard[row+1][column-1] == myBoard[row+2][column-2])){
+		&& (myBoard[row+1][column-1] == myBoard[row+2][column-2])){
 		//Check who won
-		if(myBoard[row][column] == 1){
+		if((myBoard[row][column] == 1) && (myBoard[row][column] == myBoard[row+1][column-1])){
 			toReturn = 10; //It was me
 		}
-		else if(myBoard[row][column] == -1){
+		else if((myBoard[row][column] == -1) && (myBoard[row][column] == myBoard[row+1][column-1])){
 			toReturn = -10; //It was the oponent
+		}
+		else{
+			//Prevented the oponent's victory
+			toReturn = 9;
 		}
 	}
 	//Two up right
 	if((row-2 >= 0) && (column+2 <= MAXC) 
-		&& (myBoard[row][column] == myBoard[row-1][column+1]) && (myBoard[row-1][column+1] == myBoard[row-2][column+2])){
+		&& (myBoard[row-1][column+1] == myBoard[row-2][column+2])){
 		//Check who won
-		if(myBoard[row][column] == 1){
+		if((myBoard[row][column] == 1) && (myBoard[row][column] == myBoard[row-1][column+1])){
 			toReturn = 10; //It was me
 		}
-		else if(myBoard[row][column] == -1){
+		else if((myBoard[row][column] == -1) && (myBoard[row][column] == myBoard[row-1][column+1])){
 			toReturn = -10; //It was the oponent
+		}
+		else{
+			//Prevented the oponent's victory
+			toReturn = 9;
 		}
 	}
 	//Two up left
 	if((row-2 >= 0) && (column-2 >= 0) 
-		&& (myBoard[row][column] == myBoard[row-1][column-1]) && (myBoard[row-1][column-1] == myBoard[row-2][column-2])){
+		&& (myBoard[row-1][column-1] == myBoard[row-2][column-2])){
 		//Check who won
-		if(myBoard[row][column] == 1){
+		if((myBoard[row][column] == 1) && (myBoard[row][column] == myBoard[row-1][column-1])){
 			toReturn = 10; //It was me
 		}
-		else if(myBoard[row][column] == -1){
+		else if((myBoard[row][column] == -1) && (myBoard[row][column] == myBoard[row-1][column-1])){
 			toReturn = -10; //It was the oponent
+		}
+		else{
+			//Prevented the oponent's victory
+			toReturn = 9;
 		}
 	}
 	//Others
 	if((row-1 >= 0) && (row+1 <= MAXR) && (column-1 >= 0) && (column+1 <= MAXC)){
 		//One up left, one down right
-		if((myBoard[row][column] == myBoard[row-1][column-1]) && (myBoard[row-1][column-1] == myBoard[row+1][column+1])){
+		if(myBoard[row-1][column-1] == myBoard[row+1][column+1]){
 			//Check who won
-			if(myBoard[row][column] == 1){
+			if((myBoard[row][column] == 1) && (myBoard[row][column] == myBoard[row-1][column-1])){
 				toReturn = 10; //It was me
 			}
-			else if(myBoard[row][column] == -1){
+			else if((myBoard[row][column] == -1) && (myBoard[row][column] == myBoard[row-1][column-1])){
 				toReturn = -10; //It was the oponent
+			}
+			else{
+				//Prevented the oponent's victory
+				toReturn = 9;
 			}
 		}
 		//One down left, one up right
-		if((myBoard[row][column] == myBoard[row+1][column-1]) && (myBoard[row+1][column+1] == myBoard[row-1][column+1])){
+		if(myBoard[row+1][column-1] == myBoard[row-1][column+1]){
 			//Check who won
-			if(myBoard[row][column] == 1){
+			if((myBoard[row][column] == 1) && (myBoard[row][column] == myBoard[row+1][column-1])){
 				toReturn = 10; //It was me
 			}
-			else if(myBoard[row][column] == -1){
+			else if((myBoard[row][column] == -1) && (myBoard[row][column] == myBoard[row+1][column-1])){
 				toReturn = -10; //It was the oponent
 			}
 		}
@@ -323,8 +365,6 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 			}
 		}
 	}
-
-	//Check if you're preventing the oponent's victory
 
 
 	return toReturn;
