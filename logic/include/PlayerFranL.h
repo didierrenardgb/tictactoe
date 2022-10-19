@@ -35,10 +35,7 @@ namespace ttt
 			Coordinates coords;
 			auto operator >(next_move x)
 			{
-				if (depth > x.depth)
-					return 1;
-				else
-					return 0;
+				return depth > x.depth;
 			}
 		};
 		
