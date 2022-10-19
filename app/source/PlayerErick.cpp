@@ -64,10 +64,10 @@ static int** copyBoard(Board const& board){
 	return myBoard;
 }
 
-static void printBoard(int** const& myBoard){
+static void printBoard(int** const& myBoard, int const& MAXR, int const& MAXC){
 	std::cout << std::endl;
-	for(size_t i=0; i < 3; i++){
-		for(size_t j=0; j < 3; j++){
+	for(size_t i=0; i < MAXR; i++){
+		for(size_t j=0; j < MAXC; j++){
 			std::cout << myBoard[i][j] << " | ";
 		}
 		std::cout << std::endl;
@@ -79,7 +79,7 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 	//Center
 	return 7;
 	//Next to one of yours
-	return 5;
+	return 1;
 	//Wincon
 	return 10;
 	//Draw
@@ -93,13 +93,13 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 
 	//First turn, always right at the middle
 	if((board.empty()) && (row == MAXR/2) && (column == MAXC/2)){
-		toReturn = 7;
+		return 7; //Early return, preventing useless checks
 	}
 
-	//Check if you're preventing the oponent's victory DONE (in between the checks for wincon).
-	
-	//Check wincon for row DONE.
-	if(column == 0){ //Leftmost col
+	//Check if you're preventing the oponent's victory (in between the checks for wincon).
+
+	//Check wincon for row.
+	if((column == 0) && (myBoard[row][column+1] != 0)){ //Leftmost col
 		//Only check two to the right
 		if((myBoard[row][column+1] == myBoard[row][column+2])){
 			//Check who won
@@ -111,11 +111,11 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 			}
 			else{
 				//Prevented the oponent's victory
-				toReturn = 9;
+				toReturn = (myBoard[row][column] == 1) ? 9 : -9;
 			}
 		}
 	}
-	else if(column == MAXC){ //Rightmost col
+	else if((column == MAXC) && (myBoard[row][column-1] != 0)){ //Rightmost col
 		//Only check two to the left
 		if((myBoard[row][column-1] == myBoard[row][column-2])){
 			//Check who won
@@ -127,15 +127,13 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 			}
 			else{
 				//Prevented the oponent's victory
-				toReturn = 9;
+				toReturn = (myBoard[row][column] == 1) ? 9 : -9;
 			}
 		}
 	}
-	else{ //Both sides now
+	else if((column != 0) && (column != MAXC)){ //Both sides now
 		//One left-One right, Two left, Two right
-
-		//Make all this a little more efficient
-		if((myBoard[row][column-1] == myBoard[row][column+1])){
+		if((myBoard[row][column-1] != 0) && (myBoard[row][column-1] == myBoard[row][column+1])){
 			//Check who won
 			if((myBoard[row][column] == 1)&&(myBoard[row][column] == myBoard[row][column+1])){
 				toReturn = 10; //It was me
@@ -145,11 +143,11 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 			}
 			else{
 				//Prevented the oponent's victory
-				toReturn = 9;
+				toReturn = (myBoard[row][column] == 1) ? 9 : -9;
 			}
 		}
 
-		if((column-2 >= 0) && (myBoard[row][column-1] == myBoard[row][column-2])){
+		if((column-2 >= 0) && (myBoard[row][column-1] != 0) && (myBoard[row][column-1] == myBoard[row][column-2])){
 			//Check who won
 			if((myBoard[row][column] == myBoard[row][column-1]) && (myBoard[row][column] == 1)){
 				toReturn = 10; //It was me
@@ -159,11 +157,11 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 			}
 			else{
 				//Prevented the oponent's victory
-				toReturn = 9;
+				toReturn = (myBoard[row][column] == 1) ? 9 : -9;
 			}
 		}
 
-		if((column+2 <= MAXC)&&(myBoard[row][column+1] == myBoard[row][column+2])){
+		if((column+2 <= MAXC)&&(myBoard[row][column+1] != 0)&&(myBoard[row][column+1] == myBoard[row][column+2])){
 			//Check who won
 			if((myBoard[row][column] == myBoard[row][column+1]) && (myBoard[row][column] == 1)){
 				toReturn = 10; //It was me
@@ -173,13 +171,13 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 			}
 			else{
 				//Prevented the oponent's victory
-				toReturn = 9;
+				toReturn = (myBoard[row][column] == 1) ? 9 : -9;
 			}
 		}
 	}
 
-	//Check wincon for column DONE.
-	if(row == 0){ //Upmost row
+	//Check wincon for column.
+	if((row == 0) && (myBoard[row+1][column] != 0)){ //Upmost row
 		//Only check two to the bottom
 		if(myBoard[row+1][column] == myBoard[row+2][column]){
 			//Check who won
@@ -191,11 +189,11 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 			}
 			else{
 				//Prevented the oponent's victory
-				toReturn = 9;
+				toReturn = (myBoard[row][column] == 1) ? 9 : -9;
 			}
 		}
 	}
-	else if(row == MAXR){ //Downmost row
+	else if((row == MAXR) && (myBoard[row-1][column] != 0)){ //Downmost row
 		//Only check two to the top
 		if(myBoard[row-1][column] == myBoard[row-2][column]){
 			//Check who won
@@ -207,15 +205,13 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 			}
 			else{
 				//Prevented the oponent's victory
-				toReturn = 9;
+				toReturn = (myBoard[row][column] == 1) ? 9 : -9;
 			}
 		}
 	}
-	else{ //Both sides now
+	else if((row != 0) && (row != MAXR)){ //Both sides now
 		//One up-One down, Two up, Two down
-
-		//Make all this a little more efficient
-		if(myBoard[row+1][column] == myBoard[row-1][column]){
+		if((myBoard[row+1][column] != 0) && (myBoard[row+1][column] == myBoard[row-1][column])){
 			//Check who won
 			if((myBoard[row][column] == 1)&&(myBoard[row][column] == myBoard[row+1][column])){
 				toReturn = 10; //It was me
@@ -225,11 +221,11 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 			}
 			else{
 				//Prevented the oponent's victory
-				toReturn = 9;				
+				toReturn = (myBoard[row][column] == 1) ? 9 : -9;				
 			}
 		}
 
-		if((row-2 >= 0) && (myBoard[row-1][column] == myBoard[row-2][column])){
+		if((row-2 >= 0) && (myBoard[row-1][column] != 0) && (myBoard[row-1][column] == myBoard[row-2][column])){
 			//Check who won
 			if((myBoard[row][column] == 1)&&(myBoard[row][column] == myBoard[row-1][column])){
 				toReturn = 10; //It was me
@@ -239,11 +235,11 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 			}
 			else{
 				//Prevented the oponent's victory
-				toReturn = 9;
+				toReturn = (myBoard[row][column] == 1) ? 9 : -9;
 			}
 		}
 
-		if((row+2 <= MAXR) && (myBoard[row+1][column] == myBoard[row+2][column])){
+		if((row+2 <= MAXR) && (myBoard[row+1][column] != 0) && (myBoard[row+1][column] == myBoard[row+2][column])){
 			//Check who won
 			if((myBoard[row][column] == 1)&&(myBoard[row][column] == myBoard[row+1][column])){
 				toReturn = 10; //It was me
@@ -253,14 +249,14 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 			}
 			else{
 				//Prevented the oponent's victory
-				toReturn = 9;
+				toReturn = (myBoard[row][column] == 1) ? 9 : -9;
 			}
 		}
 	}
 
-	//Diagonals DONE.
+	//Diagonals.
 	//Two down right
-	if((row+2 <= MAXR) && (column+2 <= MAXC) 
+	if((row+2 <= MAXR) && (column+2 <= MAXC) && (myBoard[row+1][column+1] != 0)
 		&& (myBoard[row+1][column+1] == myBoard[row+2][column+2])){
 		//Check who won
 		if((myBoard[row][column] == 1) && (myBoard[row][column] == myBoard[row+1][column+1])) {
@@ -271,11 +267,11 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 		}
 		else{
 			//Prevented the oponent's victory
-			toReturn = 9;
+			toReturn = (myBoard[row][column] == 1) ? 9 : -9;
 		}
 	}
 	//Two down left
-	if((row+2 <= MAXR) && (column-2 >= 0) 
+	if((row+2 <= MAXR) && (column-2 >= 0) && (myBoard[row+1][column-1] != 0)
 		&& (myBoard[row+1][column-1] == myBoard[row+2][column-2])){
 		//Check who won
 		if((myBoard[row][column] == 1) && (myBoard[row][column] == myBoard[row+1][column-1])){
@@ -286,11 +282,11 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 		}
 		else{
 			//Prevented the oponent's victory
-			toReturn = 9;
+			toReturn = (myBoard[row][column] == 1) ? 9 : -9;
 		}
 	}
 	//Two up right
-	if((row-2 >= 0) && (column+2 <= MAXC) 
+	if((row-2 >= 0) && (column+2 <= MAXC) && (myBoard[row-1][column+1] != 0)
 		&& (myBoard[row-1][column+1] == myBoard[row-2][column+2])){
 		//Check who won
 		if((myBoard[row][column] == 1) && (myBoard[row][column] == myBoard[row-1][column+1])){
@@ -301,11 +297,11 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 		}
 		else{
 			//Prevented the oponent's victory
-			toReturn = 9;
+			toReturn = (myBoard[row][column] == 1) ? 9 : -9;
 		}
 	}
 	//Two up left
-	if((row-2 >= 0) && (column-2 >= 0) 
+	if((row-2 >= 0) && (column-2 >= 0) && (myBoard[row-1][column-1] != 0)
 		&& (myBoard[row-1][column-1] == myBoard[row-2][column-2])){
 		//Check who won
 		if((myBoard[row][column] == 1) && (myBoard[row][column] == myBoard[row-1][column-1])){
@@ -316,13 +312,13 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 		}
 		else{
 			//Prevented the oponent's victory
-			toReturn = 9;
+			toReturn = (myBoard[row][column] == 1) ? 9 : -9;
 		}
 	}
 	//Others
 	if((row-1 >= 0) && (row+1 <= MAXR) && (column-1 >= 0) && (column+1 <= MAXC)){
 		//One up left, one down right
-		if(myBoard[row-1][column-1] == myBoard[row+1][column+1]){
+		if((myBoard[row-1][column-1] != 0) && (myBoard[row-1][column-1] == myBoard[row+1][column+1])){
 			//Check who won
 			if((myBoard[row][column] == 1) && (myBoard[row][column] == myBoard[row-1][column-1])){
 				toReturn = 10; //It was me
@@ -332,11 +328,11 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 			}
 			else{
 				//Prevented the oponent's victory
-				toReturn = 9;
+				toReturn = (myBoard[row][column] == 1) ? 9 : -9;
 			}
 		}
 		//One down left, one up right
-		if(myBoard[row+1][column-1] == myBoard[row-1][column+1]){
+		if((myBoard[row+1][column-1] != 0) && (myBoard[row+1][column-1] == myBoard[row-1][column+1])){
 			//Check who won
 			if((myBoard[row][column] == 1) && (myBoard[row][column] == myBoard[row+1][column-1])){
 				toReturn = 10; //It was me
@@ -344,33 +340,36 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 			else if((myBoard[row][column] == -1) && (myBoard[row][column] == myBoard[row+1][column-1])){
 				toReturn = -10; //It was the oponent
 			}
+			else{
+				//Prevented the oponent's victory
+				toReturn = (myBoard[row][column] == 1) ? 9 : -9;
+			}
 		}
 	}
 
-	//Check if the token is next to another one of yours, so add points
-	for(size_t i=row-1; i <= row+1; i++){
-		for(size_t j=column-1; j <= column+1; j++){
+	//Additional points for placing the token next to another of the same type.
+	for(int i=row-1; i <= row+1; i++){
+		for(int j=column-1; j <= column+1; j++){
 			if((i==row) && (j==column)){
 				continue;
 			}
 			if((i>=0)&&(i<=MAXR)&&(j>=0)&&(j<=MAXC)){ //Check limits
 				if(myBoard[i][j]==1){
-					toReturn+=5;
+					toReturn+=1;
 					break;
 				}
 				else if(myBoard[i][j]==-1){
-					toReturn-=5;
+					toReturn-=1;
 					break;
 				}
 			}
 		}
 	}
 
-
 	return toReturn;
 }
 
-static int searchPlay(Board const& board, int ** myBoard, int row, int column, int depth, bool isMaximizer){
+static int searchPlay(Board const& board, int ** myBoard, int const& row, int const& column, int depth, bool isMaximizer, int const& MAXR, int const& MAXC){
 	int worth = evaluate(board, myBoard, row, column) - depth; //This is the heuristic
 	
 	//Check for TERMINAL STATES (the first two about the board, the other about the algorythm).
@@ -382,12 +381,9 @@ static int searchPlay(Board const& board, int ** myBoard, int row, int column, i
 	}
 
 	//Check for a full board and not wincon, so it's a draw.
-	//Do not use the original board, use the copy!!!!!!!1!!11!
-	int MAXR = board.height();
-	int MAXC = board.width();
 	bool full = true;
-	for(size_t i=0; i<MAXR; i++){
-		for(size_t j=0; j<MAXR; j++){
+	for(size_t i = 0; i < MAXR; i++){
+		for(size_t j = 0; j < MAXR; j++){
 			if(myBoard[i][j] == 0){
 				full=false;
 				break;
@@ -413,11 +409,10 @@ static int searchPlay(Board const& board, int ** myBoard, int row, int column, i
 					//Play on that coordinate
 					myBoard[r][c] = -1;
 					//Get the worth value
-					worth = searchPlay(board, myBoard, r, c, depth+1, false);
+					worth = searchPlay(board, myBoard, r, c, depth+1, false, MAXR, MAXC);
 					if(worth < worstUtility){
 						worstUtility = worth;
 					}
-					//Do some more things
 					myBoard[r][c] = 0; //Remove token
 				}
 			}
@@ -426,14 +421,14 @@ static int searchPlay(Board const& board, int ** myBoard, int row, int column, i
 	}
 	else{
 		int bestUtility = INT_MIN;
-		for(size_t r = 0; r < MAXR; r++){ //Care with this as it could be a bigger board.
-			for(size_t c = 0; c < MAXC; c++){ //Care with this as it could be a bigger board.
+		for(size_t r = 0; r < MAXR; r++){
+			for(size_t c = 0; c < MAXC; c++){
 				//Check if the coordinate is occupied or not.
 				if(myBoard[r][c] == 0){
 					//Play on that coordinate
 					myBoard[r][c] = 1;
 					//Get the worth value
-					worth = searchPlay(board, myBoard, r, c, depth+1, true);
+					worth = searchPlay(board, myBoard, r, c, depth+1, true, MAXR, MAXC);
 					if(worth > bestUtility){
 						bestUtility = worth; 
 					}
@@ -471,7 +466,7 @@ static Coordinates minimax(Board const& board){
 				//Play on that coordinate
 				myBoard[r][c] = 1;
 				//Get the worth value
-				worth = searchPlay(board, myBoard, r, c, depth, true);
+				worth = searchPlay(board, myBoard, r, c, depth, true, MAXR, MAXC);
 				if(worth > bestUtility){
 					bestUtility = worth;
 					bestCoordinate.x = c;
@@ -482,6 +477,9 @@ static Coordinates minimax(Board const& board){
 		}
 	}
 
+	//Debugging
+	printBoard(myBoard, MAXR, MAXC);
+
 	//Free the memory cells
 	for(int i = 0; i < board.height(); i++){
 		delete [] myBoard[i];
@@ -489,7 +487,7 @@ static Coordinates minimax(Board const& board){
 	delete [] myBoard;
 
 	//Debugging
-	std::cout << "\n" << "worth=" << worth << "\n" << "coords=(" << bestCoordinate.x << "," << bestCoordinate.y << ")\n";
+	std::cout << "\n" << "bestUtility=" << bestUtility << "\n" << "coords=(" << bestCoordinate.x << "," << bestCoordinate.y << ")\n";
 	return bestCoordinate;
 
 }
@@ -499,18 +497,7 @@ static Coordinates play(Board const& board)
 {
 	if (board.valid())
 	{
-		//My part
 		return minimax(board);
-
-		/*
-		//Didi's
-		Coordinates coords = randomCoordinate(board);
-		while ((board.tile(coords) == nullptr) || board.tile(coords)->owner().has_value())
-		{
-			coords = randomCoordinate(board);
-		}
-		return coords;
-		*/
 	}
 
 	return { 0, 0 };
@@ -528,20 +515,6 @@ std::string const& PlayerErick::name() const
 
 Coordinates PlayerErick::play(Board const& board) const
 {
-	//My part
-	//Debugging
-	/*
-	int ** myBoard = copyBoard(board);
-	printBoard(myBoard);
-	for(int i = 0; i < board.height(); i++){
-		delete [] myBoard[i];
-	}
-	delete [] myBoard;
-	*/
-
-	//return ttt::minimax(board);
-
-	//Didi's
 	return ttt::play(board);
 }
 
