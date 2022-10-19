@@ -14,7 +14,7 @@ namespace ttt
 	class PlayerFranL : public IPlayer
 	{
 	public:
-		PlayerFranL(std::string const& name, int max_len=4, int min_marks=3, int max_depth=6);
+		PlayerFranL(std::string const& name, int max_len=4, int min_marks=3, int max_depth=4);
 		std::string const& name() const override;
 		Coordinates play(Board const& board) const override;
 

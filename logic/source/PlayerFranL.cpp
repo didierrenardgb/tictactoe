@@ -60,7 +60,7 @@ namespace ttt
 				{
 
 					if (board[i][j] == 0) {
-						board[i][j] = 1;
+						board[i][j] = -1;
 						if (willwin(-1, board, width, height, winCondition))
 						{
 							return { i,j };
@@ -156,7 +156,7 @@ namespace ttt
 			for (int j = 0; j < board.width(); j++)
 			{
 				if (tempboard[i][j] == 0) {
-					tempboard[i][j] = 1;
+					tempboard[i][j] = -1;
 
 					coords = defend_array(tempboard, board.height(), board.width(), board.winCondition());
 					if (coords.x != -1)
