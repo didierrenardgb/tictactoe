@@ -6,7 +6,10 @@
 
 namespace ttt
 {
-
+/*
+ * Given a map an owner and a coord, assings owner to Spot at coord in map
+ * then updates the score of neighbouring Spots
+ */
 static void addAt(Spot** myMap, players owner, Coordinates const& coord)
 {
 	int value = 0;
@@ -18,7 +21,7 @@ static void addAt(Spot** myMap, players owner, Coordinates const& coord)
 	//Assing owner to spot
 	myMap[coord.x][coord.y].setOwner(owner);
 	
-	//Add score to spot
+	//Add score to neighbours
 	for (int i = -1; i < 2; i++)
 	{
 		for (int j = -1; j < 2; j++) {
@@ -27,6 +30,12 @@ static void addAt(Spot** myMap, players owner, Coordinates const& coord)
 		}
 	}
 }
+
+/*
+ * Given a board and a player, creates a dummyboard
+ * assigning PLAYER value to player owned spots, OTHER value
+ * to non player owned spots and NONE value to ownerless Spots
+ */
 static Spot** fillBoard(Board const& board, PlayerFede const& player)
 {
 	//Reserve Memory
@@ -58,13 +67,25 @@ static Spot** fillBoard(Board const& board, PlayerFede const& player)
 
 	return myMap;
 }
+
+/*
+ * Given non NULL dummyboard. Frees memory
+ */
 static void release(Spot** myBoard, int width)
 {
-	for (int i{ 0 }; i < width; i++)
-		delete[]myBoard[i];
-	delete myBoard;
+	if (myBoard != nullptr)
+	{
+		for (int i{ 0 }; i < width; i++)
+			delete[]myBoard[i];
+		delete myBoard;
+		myBoard = nullptr;
+	}
 }
-
+/*
+ * Given a dummyboard, coords, dimentions and an owner,
+ * returns if owner owns the Spot at coords in the dummyboard
+ * if spot invalid also returns false
+ */
 static bool check(Spot** board, int x, int y, char who, int width = 3, int height = 3)
 {
 	if (x < width && x >= 0 && y < height && y >= 0)
@@ -72,6 +93,12 @@ static bool check(Spot** board, int x, int y, char who, int width = 3, int heigh
 	else
 		return false;
 }
+
+/*
+ * Given a board a player and dimentions,
+ * returns if they exists the winning movement coords.
+ * if they don't exist it returns invalid coords
+ */
 Coordinates winningCoords(Spot** myBoard, players who, int width = 3, int height = 3, int winCon = 3)
 {
 	//For each spot in dummy board, get if winnable
@@ -139,6 +166,7 @@ Coordinates winningCoords(Spot** myBoard, players who, int width = 3, int height
 
 	return { NOTACOORD,NOTACOORD };
 }
+
 
 static Coordinates play(Board const& board, PlayerFede const& player)
 {
