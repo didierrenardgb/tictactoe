@@ -4,11 +4,14 @@
 #include "Coordinates.h"
 
 #include <compare>
+#include <vector>
 
 
 
 namespace ttt
 {
+	using int_matrix = std::vector<std::vector<int>>;
+
 	
 
 	class PlayerFranL : public IPlayer
@@ -40,11 +43,11 @@ namespace ttt
 		};
 		
 
-		int** copyboard(Board const& board) const;
-		bool willwin(int currentplayer, int** const& board, int width, int height, int wincon) const;
-		PlayerFranL::next_move PlayerFranL::evaluateboard(int** & board, int wincon, int depth=0, Coordinates const last_move = {-1,-1}) const;
-		Coordinates PlayerFranL::finish_off_array(int** board, int const height, int const width, int const winCondition, Coordinates const& excpt = { -1,-1 }) const;
-		Coordinates PlayerFranL::defend_array(int** board, int const height, int const width, int const winCondition, Coordinates const& excpt = { -1,-1 }) const;
+		int_matrix copyboard(Board const& board) const;
+		bool willwin(int currentplayer, int_matrix const& board, int width, int height, int wincon) const;
+		PlayerFranL::next_move PlayerFranL::evaluateboard(int_matrix& board, int wincon, int depth=0, Coordinates const last_move = {-1,-1}) const;
+		Coordinates PlayerFranL::finish_off_array(int_matrix board, int const height, int const width, int const winCondition, Coordinates const& excpt = { -1,-1 }) const;
+		Coordinates PlayerFranL::defend_array(int_matrix board, int const height, int const width, int const winCondition, Coordinates const& excpt = { -1,-1 }) const;
 
 
 		Coordinates finish_off(Board const& board, Coordinates const& excpt={-1,-1}) const;

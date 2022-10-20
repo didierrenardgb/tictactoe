@@ -6,11 +6,10 @@
 
 #include <random>
 #include <set>
+#include <limits>
 
 namespace ttt
 {
-
-
 
 	//Constructor
 	PlayerFranL::PlayerFranL(std::string const& name, int max_len, int min_marks, int max_depth) :
@@ -26,7 +25,7 @@ namespace ttt
 	//Scan the array of -1s, 0s and 1s, if there is a winning move, returns its coordinates
 	//If no such move exists, returns {-1,-1} instead
 	//Optionally accepts a Coordinate to ignore (important for fork detection)
-	Coordinates PlayerFranL::finish_off_array(int** board, int const height, int const width, int const winCondition, Coordinates const& excpt) const {
+	Coordinates PlayerFranL::finish_off_array(int_matrix board, int const height, int const width, int const winCondition, Coordinates const& excpt) const {
 		for (int i = 0; i < height; i++)
 		{
 			for (int j = 0; j < width; j++)
@@ -51,7 +50,7 @@ namespace ttt
 	//Scan the array of -1s, 0s and 1s, if there is a winning move for the opponent, returns its coordinates
 	//If no such move exists, returns {-1,-1} instead
 	//Optionally accepts a Coordinate to ignore (important for fork detection)
-	Coordinates PlayerFranL::defend_array(int** board, int const height, int const width, int const winCondition, Coordinates const& excpt) const {
+	Coordinates PlayerFranL::defend_array(int_matrix board, int const height, int const width, int const winCondition, Coordinates const& excpt) const {
 		for (int i = 0; i < height; i++)
 		{
 			for (int j = 0; j < width; j++)
@@ -81,11 +80,7 @@ namespace ttt
 		auto testboard = copyboard(board);
 		
 		Coordinates coords= finish_off_array(testboard, board.height(), board.width(), board.winCondition(), excpt);
-		for (int i = 0; i < board.width(); i++)
-		{
-			delete[] testboard[i];
-		}
-		delete[] testboard;
+		testboard.clear();
 		return coords;
 	}
 
@@ -95,11 +90,7 @@ namespace ttt
 	Coordinates PlayerFranL::defend(Board const& board, Coordinates const& excpt) const{
 		auto testboard = copyboard(board);
 		Coordinates coords= defend_array(testboard, board.height(), board.width(), board.winCondition(), excpt);
-		for (int i = 0; i < board.width(); i++)
-		{
-			delete[] testboard[i];
-		}
-		delete[] testboard;
+		testboard.clear();
 		return coords;
 	}
 
@@ -123,11 +114,7 @@ namespace ttt
 						coords = finish_off_array(tempboard, board.height(), board.width(), board.winCondition(),coords);
 						if (coords.x != -1)
 						{
-							for (int i = 0; i < board.width(); i++)
-							{
-								delete[] tempboard[i];
-							}
-							delete[] tempboard;
+							tempboard.clear();
 							return { i,j };
 						}
 					}
@@ -137,11 +124,7 @@ namespace ttt
 				}
 			}
 		}
-		for (int i = 0; i < board.width(); i++)
-		{
-			delete[] tempboard[i];
-		}
-		delete[] tempboard;
+		tempboard.clear();
 		return { -1,-1 };
 	}
 
@@ -164,11 +147,7 @@ namespace ttt
 						coords = defend_array(tempboard, board.height(), board.width(), board.winCondition(), coords);
 						if (coords.x != -1)
 						{
-							for (int i = 0; i < board.width(); i++)
-							{
-								delete[] tempboard[i];
-							}
-							delete[] tempboard;
+							tempboard.clear();
 							return { i,j };
 						}
 					}
@@ -178,11 +157,7 @@ namespace ttt
 				}
 			}
 		}
-		for (int i = 0; i < board.width(); i++)
-		{
-			delete[] tempboard[i];
-		}
-		delete[] tempboard;
+		tempboard.clear();
 		return { -1,-1 };
 	}
 
@@ -200,12 +175,13 @@ namespace ttt
 
 			if (board.winCondition() <= mMax_len)
 			{
-				int lowest_depth = 1000;
+				int lowest_depth = std::numeric_limits<int>::max();
 				int total_marks = 0;
-				int** smalltempboard= new int*[board.winCondition()];
+				int_matrix smalltempboard(board.winCondition());
 				for (int i = 0; i < board.winCondition(); i++)
 				{
-					smalltempboard[i] = new int[board.winCondition()];
+					std::vector<int> temp(board.winCondition(),0);
+						smalltempboard[i] = temp;
 				}
 				
 				for (int offsetX = 0; offsetX < (board.height() - board.winCondition()); offsetX++)
@@ -241,11 +217,8 @@ namespace ttt
 					}
 
 				}
-				for (int i = 0; i < board.winCondition(); i++)
-				{
-					delete[] smalltempboard[i];
-				}
-				delete[] smalltempboard;
+				
+				smalltempboard.clear();
 
 
 
@@ -266,11 +239,7 @@ namespace ttt
 							coords = finish_off_array(tempboard, board.height(), board.width(), board.winCondition());
 							if (coords.x != -1)
 							{
-								for (int i = 0; i < board.width(); i++)
-								{
-									delete[] tempboard[i];
-								}
-								delete[] tempboard;
+								tempboard.clear();
 								return { i,j };
 							}
 
@@ -297,11 +266,7 @@ namespace ttt
 					coords = { std::rand() % board.width(), std::rand() % board.height() };
 				}
 			}
-			for (int i = 0; i < board.width(); i++)
-			{
-				delete[] tempboard[i];
-			}
-			delete[] tempboard;
+			tempboard.clear();
 			return coords;
 		}
 
@@ -340,11 +305,11 @@ namespace ttt
 	}
 
 	//Create a simplified copy of the board, passing from the object to a 2d array of 0s (free spaces), -1s (controlled by an opponent) and 1s (controlled by the player)
-	int** PlayerFranL::copyboard(Board const& board) const {
-		int** array = new int* [board.height()];
+	int_matrix PlayerFranL::copyboard(Board const& board) const {
+		int_matrix array (board.height());
 		for (int i = 0; i < board.height(); i++)
 		{
-			array[i] = new int[board.width()];
+			array[i] = std::vector<int>(board.width(),0);
 			for (int j = 0; j < board.width(); j++)
 			{
 				if (board.tile({ j,i })->owner().has_value())
@@ -367,7 +332,7 @@ namespace ttt
 	}
 
 	//Check if player currentplayer will win in the current boardstate, returns true if currentplayer has won in board, false otherwise.
-	bool PlayerFranL::willwin(int currentplayer, int** const& board,int width, int height, int wincon) const {
+	bool PlayerFranL::willwin(int currentplayer, int_matrix const& board,int width, int height, int wincon) const {
 
 		for (int x = 0; x < height; x++)
 		{
@@ -414,9 +379,9 @@ namespace ttt
 
 
 	//Recursive funcion that scans a winning move from a wincon x wincon sized board
-	PlayerFranL::next_move PlayerFranL::evaluateboard(int**& board, int wincon, int depth, Coordinates const last_move) const {
+	PlayerFranL::next_move PlayerFranL::evaluateboard(int_matrix& board, int wincon, int depth, Coordinates const last_move) const {
 		Coordinates coords = last_move;
-		int lowest_depth = 9999;
+		int lowest_depth = std::numeric_limits<int>::max();
 		//If no valid move was found after mMax_depth searches, return a random valid move
 		if (depth > mMax_depth)
 		{
@@ -428,7 +393,7 @@ namespace ttt
 						{
 							if (board[i][j] == 0)
 							{
-								return { 9999, { i,j } };
+								return { std::numeric_limits<int>::max(), { i,j } };
 							}
 						}
 					}
@@ -463,7 +428,7 @@ namespace ttt
 
 				}
 				//If no ending move was found after recursion, return a valid move as a sanity check.
-				if (lowest_depth == 9999)
+				if (lowest_depth == std::numeric_limits<int>::max())
 				{
 					for (int i = 0; i < wincon; i++)
 					{
@@ -472,7 +437,7 @@ namespace ttt
 							{
 								if (board[i][j] == 0)
 								{
-									return { 9999,{ i,j } };
+									return { std::numeric_limits<int>::max(),{ i,j } };
 								}
 							}
 						}
@@ -519,7 +484,7 @@ namespace ttt
 				{
 					if (willwin(-1, board, wincon, wincon, wincon))
 					{
-						lowest_depth = 1000 - depth;
+						lowest_depth = std::numeric_limits<int>::max() - depth;
 						coords = last_move;
 					}
 					else
