@@ -32,39 +32,39 @@
 #include <random>
 
 #include <iostream>
+#include <limits>
 
 namespace ttt
 {
 const int pointsForWin = 5;
 const int maxDepth = 4;
 
-static int** copyBoard(Board const& board){
+static std::vector<std::vector<int>> copyBoard(Board const& board){
 	int MAXR = board.height();
 	int MAXC = board.width();
 
-	int ** myBoard = new int*[MAXR];
+	std::vector<std::vector<int>> toReturn(MAXR, std::vector<int>(MAXC));
 	for(size_t r = 0; r < MAXR; r++){
-		myBoard[r] = new int[MAXC];
 		for(size_t c = 0; c < MAXC; c++){
 			//Copy everything into an int matrix
 			Coordinates coords;
 			coords.x = c;
 			coords.y = r;
 			if(!board.tile(coords)->owner().has_value()){
-				myBoard[r][c] = 0; //It's empty.
+				toReturn[r][c] = 0; //It's empty.
 			}
 			else if(board.tile(coords)->owner()->get().name() == "Erick"){
-				myBoard[r][c] = 1; //It's mine.
+				toReturn[r][c] = 1; //It's mine.
 			}
 			else{
-				myBoard[r][c] = -1; //It's not mine.
+				toReturn[r][c] = -1; //It's not mine.
 			}
 		}
 	}
-	return myBoard;
+	return toReturn;
 }
 
-static void printBoard(int** const& myBoard, int const& MAXR, int const& MAXC){
+static void printBoard(std::vector<std::vector<int>> const& myBoard, int const& MAXR, int const& MAXC){
 	std::cout << std::endl;
 	for(size_t i=0; i < MAXR; i++){
 		for(size_t j=0; j < MAXC; j++){
@@ -74,7 +74,7 @@ static void printBoard(int** const& myBoard, int const& MAXR, int const& MAXC){
 	}
 }
 
-static const int evaluate(Board const& board, int** const& myBoard, int row, int column){
+static const int evaluate(Board const& board, std::vector<std::vector<int>> const& myBoard, int row, int column){
 	/*
 	//Center
 	return 7;
@@ -369,7 +369,7 @@ static const int evaluate(Board const& board, int** const& myBoard, int row, int
 	return toReturn;
 }
 
-static int searchPlay(Board const& board, int ** myBoard, int const& row, int const& column, int depth, bool isMaximizer, int const& MAXR, int const& MAXC){
+static int searchPlay(Board const& board, std::vector<std::vector<int>> myBoard, int const& row, int const& column, int depth, bool isMaximizer, int const& MAXR, int const& MAXC){
 	int worth = evaluate(board, myBoard, row, column) - depth; //This is the heuristic
 	
 	//Check for TERMINAL STATES (the first two about the board, the other about the algorythm).
@@ -401,7 +401,7 @@ static int searchPlay(Board const& board, int ** myBoard, int const& row, int co
 	int toReturn;
 	if(isMaximizer){
 		//Start of oponent path.
-		int worstUtility = INT_MAX;
+		int worstUtility = std::numeric_limits<int>::max();
 		for(size_t r = 0; r < MAXR; r++){
 			for(size_t c = 0; c < MAXC; c++){
 				//Check if the coordinate is occupied or not.
@@ -420,7 +420,7 @@ static int searchPlay(Board const& board, int ** myBoard, int const& row, int co
 		toReturn = worstUtility;
 	}
 	else{
-		int bestUtility = INT_MIN;
+		int bestUtility = std::numeric_limits<int>::min();
 		for(size_t r = 0; r < MAXR; r++){
 			for(size_t c = 0; c < MAXC; c++){
 				//Check if the coordinate is occupied or not.
@@ -447,7 +447,7 @@ static Coordinates minimax(Board const& board){
 	//Set utility variables.
 	Coordinates bestCoordinate;
 	int worth;
-	int bestUtility = INT_MIN;
+	int bestUtility = std::numeric_limits<int>::min();
 	int depth = 0;
 	int MAXR = board.height();
 	int MAXC = board.width();
@@ -455,7 +455,8 @@ static Coordinates minimax(Board const& board){
 	bestCoordinate.y = MAXR/2; 
 
 	//Copy the current state of the board (before playing).
-	int ** myBoard = copyBoard(board);
+	//int ** myBoard = copyBoard(board);
+	std::vector<std::vector<int>> myBoard = copyBoard(board);
 
 	//The board here is a matrix where you can put a token anywhere that's not occupied.
 	//Considering that, we need to roam for all the posible places to check their worth value, and select the best one.
@@ -479,12 +480,6 @@ static Coordinates minimax(Board const& board){
 
 	//Debugging
 	printBoard(myBoard, MAXR, MAXC);
-
-	//Free the memory cells
-	for(int i = 0; i < board.height(); i++){
-		delete [] myBoard[i];
-	}
-	delete [] myBoard;
 
 	//Debugging
 	std::cout << "\n" << "bestUtility=" << bestUtility << "\n" << "coords=(" << bestCoordinate.x << "," << bestCoordinate.y << ")\n";
