@@ -22,14 +22,14 @@ enum class Heuristic_values{
 
 //Token values on the board.
 enum class Token_values{
-	EMPTY_TOKEN,
+	EMPTY_TOKEN=0,
 	CURRENT_PLAYER_TOKEN,
 	RIVAL_TOKEN
 };
 
 //Id's of each posible state.
 enum class Game_Over_Values{
-	THE_GAME_IS_NOT_OVER_YET,
+	THE_GAME_IS_NOT_OVER_YET=0,
 	CURENT_PLAYER_WINS,
 	CURRENT_PLAYER_DEFEATED,
 	PLAYERS_TIE	
@@ -38,37 +38,37 @@ enum class Game_Over_Values{
 
 namespace ttt
 {
-	static const int DEPTH_VALUE = 5; //The depth value that will be use in our algorithm.
+	static const int DEPTH_VALUE = 5; //The value of depth that will be use in our algorithm.
 
 
 	//Prints the current state of the board  -tracking meanings only-.
-	static void printBoardState(Board const& board,std::vector<std::vector<int>> agorithmMatrix){
+	static void printBoardState(Board const& board,int ** algorithmMatrix){
 		for (int i = 0 ; i < board.width() ; i++){
 			for (int j = 0 ; j < board.height() ; j++){
-				std::cout<<"{ "<<i<<" , "<<j<<" }: "<<agorithmMatrix[i][j]<<" | ";
+				std::cout<<"{ "<<i<<" , "<<j<<" }: "<<algorithmMatrix[i][j]<<" | ";
 			}
 			std::cout<<std::endl;
 		}
 		std::cout<<std::endl;std::cout<<std::endl;std::cout<<std::endl;
 	}
 
-	static void executeMovement(std::vector<std::vector<int>> agorithmMatrix, Coordinates c, bool actualPlayer) //Function that execute a movement.
+	static void executeMovement(int ** algorithmMatrix, Coordinates c, bool actualPlayer) //Function that execute a movement.
 	{
 		if (actualPlayer){
-			agorithmMatrix[c.x][c.y] = (int) Token_values::CURRENT_PLAYER_TOKEN;}
+			algorithmMatrix[c.x][c.y] = (int)Token_values::CURRENT_PLAYER_TOKEN;}
 		else{
-			agorithmMatrix[c.x][c.y] = (int) Token_values::RIVAL_TOKEN;}
+			algorithmMatrix[c.x][c.y] = (int) Token_values::RIVAL_TOKEN;}
 	}
 
 //The board is passed as a parameter to know its dimensions. Thanks to that, we can use pointer notations in a simplified way, knowing the dimensions of the structure.
 
-	static std::vector<Coordinates> getMovs(Board const& board,std::vector<std::vector<int>> agorithmMatrix) //Obtenemos todos los posibles movimientos a realizar del tablero.
+	static std::vector<Coordinates> getMovs(Board const& board,int ** algorithmMatrix) //Obtenemos todos los posibles movimientos a realizar del tablero.
 	{
 		std::vector<Coordinates> output;
 		output.clear();
 		for (int i = 0 ; i < board.width() ; i++){
 			for (int j = 0 ; j < board.height() ; j++){
-				if (agorithmMatrix[i][j]==(int) Token_values::EMPTY_TOKEN){
+				if (algorithmMatrix[i][j]==0){
 					output.push_back(Coordinates{i,j});
 				}
 			}
@@ -83,7 +83,8 @@ namespace ttt
 	If the actual player looses, the function will return the value -10.
 	If there is a tie, it will return 0.*/
 
-	static int calculateValue(Board const& board, std::vector<std::vector<int>> agorithmMatrix, int gameOverStatus, bool isActualPlayer)
+
+	static int calculateValue(Board const& board, int** algorithmMatrix, int gameOverStatus, bool isActualPlayer)
 	{
 		int heuristicValue;
 		switch (gameOverStatus)
@@ -109,7 +110,6 @@ namespace ttt
 		return heuristicValue;
 	}
 
-
 /*The semantics of the values ​​to obtain
 	If the game isn't over, it will return 0.
 	If the actual player wins, the function will return the value 1.
@@ -117,128 +117,130 @@ namespace ttt
 	If there is a tie, it will return 3.*/
 
 
-static int trivialGameOver(Board const& board, std::vector<std::vector<int>> agorithmMatrix) //This function can recognize if we are in a victory state.
+static int trivialGameOver(Board const& board, int ** algorithmMatrix) //This function can recognize if we are in a victory state.
 	{																	//Its works with a trivial value of win Condition.
 
 		bool fullBoard = true; //We asume the Tie Game Over.
 		int width = board.width();
 		int height = board.height();
 		int winCondition = board.winCondition();
-		bool notWinStatus= false;
+		bool nextControl= false;
 
 		for (int i = 0 ; i < width ; i++ )
 		{
 			for (int j = 0 ; j < height ; j++)
 			{
-				int originalI = i; int originalJ= j; int amountOfEqualToken=0;
+				int xCapturated = i; int yCapturated= j; int amountOfEqualToken=0;
 
-				if ((agorithmMatrix[i][j])==(int)Token_values::EMPTY_TOKEN){
+				if ((algorithmMatrix[i][j]) == (int)Token_values::EMPTY_TOKEN){
 					fullBoard=false;
 				}
 
-
+				// R O W    C O N T R O L .
+				
 				if (i+winCondition<=width){  //we check the actual row.
-					while (!notWinStatus && amountOfEqualToken<winCondition && i+1<width){
-						if (agorithmMatrix[i][j] == agorithmMatrix[i+1][j] && agorithmMatrix[i][j]!=0){
+					while (!nextControl && amountOfEqualToken < winCondition && i + 1 <width){
+						if (algorithmMatrix[i][j] == algorithmMatrix[i+1][j] && algorithmMatrix[i][j] != (int)Token_values::EMPTY_TOKEN){
 							amountOfEqualToken++;
 							i++;
 						}else{
-							notWinStatus = true;
+							nextControl = true;
 						}
 					}
-					i = originalI;
-					if (!notWinStatus){ 
-						return agorithmMatrix[i][j];
+					i = xCapturated;
+					if (!nextControl){ 
+						return algorithmMatrix[i][j];
 					}
-					notWinStatus=false;
-					amountOfEqualToken=0;
+					nextControl=false; amountOfEqualToken=0;
 				}
+
+				// C O L U M N     C O N T R O L .
 
 
 				if (j+(winCondition)<=height){ //We check the actual column
-					while (!notWinStatus && amountOfEqualToken<winCondition && j+1<height){
-						if (agorithmMatrix[i][j] == agorithmMatrix[i][j+1] && agorithmMatrix[i][j]!=0){
+					while (!nextControl && amountOfEqualToken<winCondition && j + 1 < height){
+						if (algorithmMatrix[i][j] == algorithmMatrix[i][j+1] && algorithmMatrix[i][j] != (int) Token_values::EMPTY_TOKEN){
 							amountOfEqualToken++;
 							j++;
 						}else{
-							notWinStatus = true;
+							nextControl = true;
 						}
 					}
-					j = originalJ; 
-					if (!notWinStatus){
-						return agorithmMatrix[i][j];
+					j = yCapturated; 
+					if (!nextControl){
+						return algorithmMatrix[i][j];
 					}
-					notWinStatus=false;
-					amountOfEqualToken=0;
+					nextControl=false; amountOfEqualToken=0;
 					}
-					
-				if (j+(winCondition)<=height && i+(winCondition) <=width){  //We check the 2 possible diagonals wins.
-					j = j + winCondition-1;
-					while (!notWinStatus && amountOfEqualToken<winCondition && j>0 && i+1<width){ //Increasing Diagonal.
-						if (agorithmMatrix[i][j] == agorithmMatrix[i+1][j-1] && agorithmMatrix[i][j]!=0){
-							amountOfEqualToken++;
-							j--; 
-							i++;
-						}else{
-							notWinStatus = true;
-						}
-					}
-					i = originalI; j = originalJ;
-					if (!notWinStatus){
-						return agorithmMatrix[i+1][j + winCondition-1];
-					}
-					notWinStatus=false;
-					amountOfEqualToken=0;
 
-					
-					while (!notWinStatus && amountOfEqualToken<winCondition && j+1<height && i+1<width){//Decreasing Diagonal.
-						if (agorithmMatrix[i][j] == agorithmMatrix[i+1][j+1] && agorithmMatrix[i][j]!=0){
+				// D I A G O N A L  --> Q 1  t o  Q 3
+
+				
+				if (j + winCondition <= height && i + winCondition <= width){  //We check the 2 possible diagonals wins.
+					j = j + winCondition - 1;
+					while (!nextControl && amountOfEqualToken<winCondition && j > 0 && i + 1 < width){ //Increasing Diagonal.
+						if (algorithmMatrix[i][j] == algorithmMatrix[i+1][j-1] && algorithmMatrix[i][j]!=(int)Token_values::EMPTY_TOKEN){
+							amountOfEqualToken++;
+							j--; i++;
+						}else{
+							nextControl = true;
+						}
+					}
+					i = xCapturated; j = yCapturated;
+					if (!nextControl){
+						return algorithmMatrix[i+1][j + winCondition-1];
+					}
+					nextControl=false; amountOfEqualToken=0;
+
+					// D I A G O N A L  --> Q 2  t o  Q 4
+
+					while (!nextControl && amountOfEqualToken < winCondition && j + 1 < height && i + 1 < width){//Decreasing Diagonal.
+						if (algorithmMatrix[i][j] == algorithmMatrix[i+1][j+1] && algorithmMatrix[i][j]!=(int)Token_values::EMPTY_TOKEN){
 							amountOfEqualToken++;
 							j++; 
 							i++;
 						}else{
-							notWinStatus = true;
+							nextControl = true;
 						}
 					}
-					i = originalI; j = originalJ;
-					if (!notWinStatus){
-						return agorithmMatrix[i][j];
+					i = xCapturated; j = yCapturated;
+					if (!nextControl){
+						return algorithmMatrix[i][j];
 					}
 				}
 			}
 
 		}
 		if (fullBoard){ 
-			return 3; //In this case, we get a Tie Game Over. 
+			return (int) Game_Over_Values::PLAYERS_TIE; //In this case, we get a Tie Game Over. 
 		}else{
-			return 0; //If there is, at least, one tile empty, the game will be not over yet.
+			return (int) Game_Over_Values::THE_GAME_IS_NOT_OVER_YET; //If there is, at least, one tile empty, the game will be not over yet.
 		}
 	}
 
-
-	static int alpha_beta(int depth, int alpha, int beta, bool actualPlayer, Board const& board, std::vector<std::vector<int>> agorithmMatrix)
-	{
-		std::vector<Coordinates> movs = getMovs(board,agorithmMatrix);
+	static int alpha_beta(int depth, int alpha, int beta, bool actualPlayer, Board const& board, int ** algorithmMatrix)
+		{
+		std::vector<Coordinates> movs = getMovs(board,algorithmMatrix);
 		bool pruning =false;
-		int gameOverValue =trivialGameOver(board,agorithmMatrix);
+		int gameOverValue =trivialGameOver(board,algorithmMatrix);
 		if ((depth == 0) || gameOverValue>0){
-			return calculateValue(board,agorithmMatrix,gameOverValue,actualPlayer);
+			return calculateValue(board,algorithmMatrix,gameOverValue,actualPlayer);
 		}
 		else{
-			std::vector<Coordinates> movs = getMovs(board,agorithmMatrix); //We get all the available movements in the board.
+			std::vector<Coordinates> movs = getMovs(board,algorithmMatrix); //We get all the available movements in the board.
 			if (actualPlayer)
 			{
 				int value =-std::numeric_limits<int>::max();
 				for (Coordinates candidate : movs){ 
 					if (!pruning)
 					{
-						executeMovement(agorithmMatrix,candidate,actualPlayer); //we execute the movement.
-						value = std::max(value,alpha_beta(depth-1,alpha,beta,!actualPlayer,board,agorithmMatrix)); //we search the maximun value for the current player.
+						executeMovement(algorithmMatrix,candidate,actualPlayer); //we execute the movement.
+						value = std::max(value,alpha_beta(depth-1,alpha,beta,!actualPlayer,board,algorithmMatrix)); //we search the maximun value for the current player.
 						alpha = std::max(alpha,value);
 						if (alpha>=beta){ //if we already found a better movement.
 							pruning = true; //we dont need to keep analizing more posible states in this branch.
 						}
-						agorithmMatrix[candidate.x][candidate.y] = 0; //We undo the movement.
+						algorithmMatrix[candidate.x][candidate.y] = (int) Token_values::EMPTY_TOKEN; //We undo the movement.
 					}
 				}
 				return value;
@@ -247,13 +249,13 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>> ago
 				int value =std::numeric_limits<int>::max();
 				for (Coordinates candidate : movs){ 
 					if (!pruning){
-						executeMovement(agorithmMatrix,candidate,actualPlayer);
-						value = std::min(value,alpha_beta(depth-1,alpha,beta,!actualPlayer,board,agorithmMatrix)); //we search the lesser defeat for the current player.
+						executeMovement(algorithmMatrix,candidate,actualPlayer);
+						value = std::min(value,alpha_beta(depth-1,alpha,beta,!actualPlayer,board,algorithmMatrix)); //we search the lesser defeat for the current player.
 						beta = std::min(beta,value);
 						if (beta<=alpha){
 							pruning=true;
 						}
-						agorithmMatrix[candidate.x][candidate.y] =(int) Token_values::EMPTY_TOKEN; //Undo the last movement.
+						algorithmMatrix[candidate.x][candidate.y] =(int) Token_values::EMPTY_TOKEN; //Undo the last movement.
 					}
 				}
 				return value;
@@ -262,11 +264,11 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>> ago
 	}
 
 
-	static Coordinates play(Board const& board, std::vector<std::vector<int>> agorithmMatrix, std::string name)  //Function that obtains the final move to make.
+	static Coordinates play(Board const& board, int ** algorithmMatrix, std::string name)  //Function that obtains the final move to make.
 	{
 		Coordinates coords{0,0};
 		if (board.valid()){
-			std::vector<Coordinates> movs = getMovs(board,agorithmMatrix);
+			std::vector<Coordinates> movs = getMovs(board,algorithmMatrix);
 
 			bool actualPlayer = true; //It carries the context of which player is about to put a token. If it is true, then is the player who first called the method.
 									   //Otherwise, it's your rival.
@@ -274,13 +276,13 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>> ago
 			int beta = std::numeric_limits<int>::max(); //Infinite.
 			int best_alpha = alpha;
 			for (Coordinates candidate : movs){ 
-				executeMovement(agorithmMatrix,candidate,actualPlayer); //We consume a tile.
-				alpha=std::max(alpha,alpha_beta(DEPTH_VALUE, alpha,beta,!actualPlayer, board,agorithmMatrix));
+				executeMovement(algorithmMatrix,candidate,actualPlayer); //We consume a tile.
+				alpha=std::max(alpha,alpha_beta(DEPTH_VALUE, alpha,beta,!actualPlayer, board,algorithmMatrix));
 				if (alpha > best_alpha){
 					best_alpha = alpha;
 					coords = candidate;
 				}
-				agorithmMatrix[candidate.x][candidate.y] = (int) Token_values::EMPTY_TOKEN; //Undo the last movement.
+				algorithmMatrix[candidate.x][candidate.y] = (int) Token_values::EMPTY_TOKEN; //Undo the last movement.
 			}
 			movs.clear();
 		}
@@ -290,37 +292,37 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>> ago
 
 
 
-/* We capture the game matrix in its current state with a reduced semantic, only for algorithm propourse.
-   agorithmMatrix will the the pointer to the dynamic matrix that carries our board game.
 
+/* We capture the game matrix in its current state with a reduced semantic, only for algorithm propourse.
+   algorithmMatrix will the the pointer to the dynamic matrix that carries our board game.
    Token semantic:
 		//1 --> Actual Player (the one that invokes the function in the first place).
 		//0 --> Rival Player.
 		//2 --> Empy Tile.*/
 
-	static std::vector<std::vector<int>> initializeAlphaBeta(Board const& board, std::string const& name)
+	static int** initializeAlphaBeta(Board const& board, std::string const& name)
 	{
-		std::vector<std::vector<int>> agorithmMatrix(board.width(), std::vector<int>(board.height()));
-		
-		
+		int  ** algorithmMatrix = new int *[board.width()];
+
 		for (int i = 0 ; i < board.width() ; i++){
+			algorithmMatrix[i] = new int[board.height()];
 			for (int j = 0 ; j < board.height() ; j++){
 				Coordinates c{i,j};
 				if (board.tile(c)->owner().has_value()){
 					if (name == board.tile(c)->owner()->get().name()){
-						agorithmMatrix[i][j] = (int) Token_values::CURRENT_PLAYER_TOKEN;	
+						algorithmMatrix[i][j] = (int) Token_values::CURRENT_PLAYER_TOKEN;	
 					}
 					else{
-						agorithmMatrix[i][j] = (int) Token_values::RIVAL_TOKEN;	
+						algorithmMatrix[i][j] = (int) Token_values::RIVAL_TOKEN;	
 					}
 				}
 				else{
-					agorithmMatrix[i][j] = (int) Token_values::EMPTY_TOKEN;;
+					algorithmMatrix[i][j] = (int) Token_values::EMPTY_TOKEN;
 				}
 
 			}
 		}
-		return agorithmMatrix;
+		return algorithmMatrix;
 	}
 
 	PlayerExe::PlayerExe(std::string const& name):mName(name){
@@ -331,11 +333,8 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>> ago
 	}
 
 	Coordinates PlayerExe::play(Board const& board) const{
-		std::vector<std::vector<int>> agorithmMatrix = ttt::initializeAlphaBeta(board,name());
-		return ttt::play(board,agorithmMatrix,name());
+		int  ** algorithmMatrix = ttt::initializeAlphaBeta(board,name()); 
+		return ttt::play(board,algorithmMatrix,name());
 	}
 
 } // namespace ttt
-
-
-
