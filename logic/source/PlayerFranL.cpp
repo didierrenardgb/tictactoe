@@ -380,7 +380,7 @@ namespace ttt
 				}
 
 				//Final sanity check in case of a clogged board with no valid moves
-				return { 9999, { -1,-1 } };
+				return { std::numeric_limits<int>::max(), { -1,-1 } };
 
 
 		}
