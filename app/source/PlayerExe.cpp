@@ -79,21 +79,21 @@ namespace ttt
 
 /*The semantics of the values ​​to obtain
 	If the game isn't over, it will return a heuristic value between -9 to -1 or  1 to 9, depending on the player that is playing. Could be 5 or randomized.
-	If the actual player wins, the function will return the value 10.
-	If the actual player looses, the function will return the value -10.
+	If the actual player wins, the function will return the value 10 minus the amount of levels of depth that we generated.
+	If the actual player looses, the function will return the value -10 plus the amount of levels of depth that we generated.
 	If there is a tie, it will return 0.*/
 
 
-	static int calculateValue(Board const& board, std::vector<std::vector<int>>& algorithmMatrix, int const& gameOverStatus, bool const&isActualPlayer)
+	static int calculateValue(Board const& board, std::vector<std::vector<int>>& algorithmMatrix, int const& gameOverStatus, bool const&isActualPlayer, int const& depth)
 	{
 		int heuristicValue;
 		switch (gameOverStatus)
 		{
 			case 1:
-				heuristicValue =(int) Heuristic_values::WIN;
+				heuristicValue =(int) Heuristic_values::WIN - (DEPTH_VALUE - depth); //
 			break;
 			case 2:
-				heuristicValue =(int) Heuristic_values::DEFEAT;
+				heuristicValue =(int) Heuristic_values::DEFEAT + (DEPTH_VALUE - depth);
 			break;
 			case 3:
 				heuristicValue =(int) Heuristic_values::TIE;
@@ -126,14 +126,15 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& al
 		bool nextControl= false;
 		int token = (int)Token_values::EMPTY_TOKEN; //If token gets a value that is diferent of the empty token, a victory has cocurred!
 
+		
+
 		for (int i = 0 ; i < width ; i++ )
 		{
 			for (int j = 0 ; j < height ; j++)
 			{
-				int xCapturated = i; int yCapturated= j; int amountOfEqualToken=0;
+				int xCapturated = i; int yCapturated= j; int amountOfEqualToken=1;
 
 				// R O W    C O N T R O L .
-				
 				if (i + winCondition <=width){  //we check the actual row.
 					while (!nextControl && amountOfEqualToken < winCondition && i + 1 <width){
 						if (algorithmMatrix[i][j] == algorithmMatrix[i+1][j] && algorithmMatrix[i][j] != (int)Token_values::EMPTY_TOKEN){
@@ -144,10 +145,11 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& al
 						}
 					}
 					i = xCapturated;
-					if (!nextControl){ 
+					if (amountOfEqualToken==winCondition){ 
+						//std::cout<<"VICTORIA FILA EN POS: {"<<i<<" , "<<j<<"} Con ficha: "<<algorithmMatrix[i][j]<<std::endl;
 						token = algorithmMatrix[i][j];
 					}
-					nextControl=false; amountOfEqualToken=0;
+					nextControl=false; amountOfEqualToken=1;
 				}
 
 				// C O L U M N    C O N T R O L .
@@ -163,16 +165,19 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& al
 						}
 					}
 					j = yCapturated; 
-					if (!nextControl){
+
+					if (amountOfEqualToken==winCondition){
+						//std::cout<<"VICTORIA COLUMNA EN POS: {"<<i<<" , "<<j<<"} Con ficha: "<<algorithmMatrix[i][j]<<std::endl;
 						token = algorithmMatrix[i][j];
 					}
-					nextControl=false; amountOfEqualToken=0;
+					nextControl=false; amountOfEqualToken=1;
 					}
 
 				// D I A G O N A L  --> Q 1  t o  Q 3
 
 				
 				if (j + winCondition <= height && i + winCondition <= width && token==(int)Token_values::EMPTY_TOKEN){  //We check the 2 possible diagonals wins.
+					i = xCapturated; j = yCapturated;
 					j = j + winCondition - 1;
 					while (!nextControl && amountOfEqualToken<winCondition && j > 0 && i + 1 < width){ //Increasing Diagonal.
 						if (algorithmMatrix[i][j] == algorithmMatrix[i+1][j-1] && algorithmMatrix[i][j]!=(int)Token_values::EMPTY_TOKEN){
@@ -182,11 +187,11 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& al
 							nextControl = true;
 						}
 					}
-					i = xCapturated; j = yCapturated;
-					if (!nextControl){
-						token = algorithmMatrix[i+1][j + winCondition-1];
+					if (amountOfEqualToken==winCondition){
+						//std::cout<<"VICTORIA DIAGONAL INVERTIDA EN POS: {"<<i<<" , "<<j<<"} Con ficha: "<<algorithmMatrix[i][j]<<std::endl;
+						token = algorithmMatrix[i-1][j+1];
 					}
-					nextControl=false; amountOfEqualToken=0;
+					nextControl=false; amountOfEqualToken=1;
 
 					// D I A G O N A L  --> Q 2  t o  Q 4
 
@@ -200,7 +205,8 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& al
 						}
 					}
 					i = xCapturated; j = yCapturated;
-					if (!nextControl){
+					if (amountOfEqualToken==winCondition){
+						//std::cout<<"VICTORIA DIAGONAL EN POS: {"<<i<<" , "<<j<<"} Con ficha: "<<algorithmMatrix[i][j]<<std::endl;
 						token = algorithmMatrix[i][j];
 					}
 				}
@@ -228,7 +234,7 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& al
 		bool pruning =false;
 		int gameOverValue =trivialGameOver(board,algorithmMatrix);
 		if ((depth == 0) || gameOverValue>0){
-			return calculateValue(board,algorithmMatrix,gameOverValue,actualPlayer);
+			return calculateValue(board,algorithmMatrix,gameOverValue,actualPlayer,depth);
 		}
 		else{
 			std::vector<Coordinates> movs = getMovs(board,algorithmMatrix); //We get all the available movements in the board.
@@ -331,6 +337,7 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& al
 	Coordinates PlayerExe::play(Board const& board) const{
 		std::vector<std::vector<int>> algorithmMatrix = ttt::initializeAlphaBeta(board,name()); 
 		return ttt::play(board,algorithmMatrix);
+
 	}
 
 } // namespace ttt
