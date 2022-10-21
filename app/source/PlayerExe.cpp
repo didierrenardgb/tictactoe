@@ -99,7 +99,7 @@ namespace ttt
 				heuristicValue =(int) Heuristic_values::TIE;
 			break;
 			default:
-				//srand(time(0));                                //We can choose to calculate the heuristic value of partial states randomly, to increments the odds to not get a tie. 
+				//srand(time(0));                                //We can choose to calculate the heuristic value of partial states randomly, to increments the odds to not get a tie 
    				//heuristicValue = 1 + (rand()%10);              //between two instances of the same IAs. Also, this will increase the odds to prune more branches.
 				heuristicValue =(int) Heuristic_values::INDIFERENT;
 				if (!isActualPlayer){
@@ -118,7 +118,7 @@ namespace ttt
 
 
 static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& algorithmMatrix) //This function can recognize if we are in a victory state.
-	{																	//Its works with a trivial value of win Condition.
+	{																							//Its works with a trivial value of win Condition.
 		bool fullBoard = true; //We asume the Tie Game Over.
 		int width = board.width();
 		int height = board.height();
@@ -150,7 +150,7 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& al
 					nextControl=false; amountOfEqualToken=0;
 				}
 
-				// C O L U M N     C O N T R O L .
+				// C O L U M N    C O N T R O L .
 
 
 				if (j+ winCondition <= height && token==(int)Token_values::EMPTY_TOKEN){ //We check the actual column
@@ -208,7 +208,7 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& al
 				if ((algorithmMatrix[i][j]) == (int)Token_values::EMPTY_TOKEN){
 					fullBoard=false;
 				}
-				if (token>0) //We found a victory!
+				if (token!=(int)Token_values::EMPTY_TOKEN) //We found a victory!
 				{
 					return token;
 				}
@@ -292,10 +292,6 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& al
 		return coords;
 	}
 
-
-
-
-
 /* We capture the game matrix in its current state with a reduced semantic, only for algorithm propourse.
    algorithmMatrix will the the pointer to the dynamic matrix that carries our board game.
    Token semantic:
@@ -309,6 +305,7 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& al
 		for (int i = 0 ; i < board.width() ; i++){
 			for (int j = 0 ; j < board.height() ; j++){
 				Coordinates c{i,j};
+				algorithmMatrix[i][j] = (int) Token_values::EMPTY_TOKEN; //I Asume that the tile is empty.
 				if (board.tile(c)->owner().has_value()){
 					if (name == board.tile(c)->owner()->get().name()){
 						algorithmMatrix[i][j] = (int) Token_values::CURRENT_PLAYER_TOKEN;	
@@ -321,9 +318,6 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& al
 		}
 		return algorithmMatrix;
 	}
-
-
-
 
 	//PlayerExe.h Implementations.
 
