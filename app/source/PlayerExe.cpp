@@ -42,7 +42,7 @@ namespace ttt
 
 
 	//Prints the current state of the board  -tracking meanings only-.
-	static void printBoardState(Board const& board,int ** algorithmMatrix){
+	static void printBoardState(Board const& board,std::vector<std::vector<int>>& algorithmMatrix){
 		for (int i = 0 ; i < board.width() ; i++){
 			for (int j = 0 ; j < board.height() ; j++){
 				std::cout<<"{ "<<i<<" , "<<j<<" }: "<<algorithmMatrix[i][j]<<" | ";
@@ -52,7 +52,7 @@ namespace ttt
 		std::cout<<std::endl;std::cout<<std::endl;std::cout<<std::endl;
 	}
 
-	static void executeMovement(int ** algorithmMatrix, Coordinates c, bool actualPlayer) //Function that execute a movement.
+	static void executeMovement(std::vector<std::vector<int>> & algorithmMatrix, Coordinates const& c, bool const& actualPlayer) //Function that execute a movement.
 	{
 		if (actualPlayer){
 			algorithmMatrix[c.x][c.y] = (int)Token_values::CURRENT_PLAYER_TOKEN;}
@@ -62,7 +62,7 @@ namespace ttt
 
 //The board is passed as a parameter to know its dimensions. Thanks to that, we can use pointer notations in a simplified way, knowing the dimensions of the structure.
 
-	static std::vector<Coordinates> getMovs(Board const& board,int ** algorithmMatrix) //Obtenemos todos los posibles movimientos a realizar del tablero.
+	static std::vector<Coordinates> getMovs(Board const& board,std::vector<std::vector<int>> & algorithmMatrix) //Obtenemos todos los posibles movimientos a realizar del tablero.
 	{
 		std::vector<Coordinates> output;
 		output.clear();
@@ -84,7 +84,7 @@ namespace ttt
 	If there is a tie, it will return 0.*/
 
 
-	static int calculateValue(Board const& board, int** algorithmMatrix, int gameOverStatus, bool isActualPlayer)
+	static int calculateValue(Board const& board, std::vector<std::vector<int>>& algorithmMatrix, int const& gameOverStatus, bool const&isActualPlayer)
 	{
 		int heuristicValue;
 		switch (gameOverStatus)
@@ -117,14 +117,14 @@ namespace ttt
 	If there is a tie, it will return 3.*/
 
 
-static int trivialGameOver(Board const& board, int ** algorithmMatrix) //This function can recognize if we are in a victory state.
+static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& algorithmMatrix) //This function can recognize if we are in a victory state.
 	{																	//Its works with a trivial value of win Condition.
-
 		bool fullBoard = true; //We asume the Tie Game Over.
 		int width = board.width();
 		int height = board.height();
 		int winCondition = board.winCondition();
 		bool nextControl= false;
+		int token = (int)Token_values::EMPTY_TOKEN; //If token gets a value that is diferent of the empty token, a victory has cocurred!
 
 		for (int i = 0 ; i < width ; i++ )
 		{
@@ -132,13 +132,9 @@ static int trivialGameOver(Board const& board, int ** algorithmMatrix) //This fu
 			{
 				int xCapturated = i; int yCapturated= j; int amountOfEqualToken=0;
 
-				if ((algorithmMatrix[i][j]) == (int)Token_values::EMPTY_TOKEN){
-					fullBoard=false;
-				}
-
 				// R O W    C O N T R O L .
 				
-				if (i+winCondition<=width){  //we check the actual row.
+				if (i + winCondition <=width){  //we check the actual row.
 					while (!nextControl && amountOfEqualToken < winCondition && i + 1 <width){
 						if (algorithmMatrix[i][j] == algorithmMatrix[i+1][j] && algorithmMatrix[i][j] != (int)Token_values::EMPTY_TOKEN){
 							amountOfEqualToken++;
@@ -149,7 +145,7 @@ static int trivialGameOver(Board const& board, int ** algorithmMatrix) //This fu
 					}
 					i = xCapturated;
 					if (!nextControl){ 
-						return algorithmMatrix[i][j];
+						token = algorithmMatrix[i][j];
 					}
 					nextControl=false; amountOfEqualToken=0;
 				}
@@ -157,7 +153,7 @@ static int trivialGameOver(Board const& board, int ** algorithmMatrix) //This fu
 				// C O L U M N     C O N T R O L .
 
 
-				if (j+(winCondition)<=height){ //We check the actual column
+				if (j+ winCondition <= height && token==(int)Token_values::EMPTY_TOKEN){ //We check the actual column
 					while (!nextControl && amountOfEqualToken<winCondition && j + 1 < height){
 						if (algorithmMatrix[i][j] == algorithmMatrix[i][j+1] && algorithmMatrix[i][j] != (int) Token_values::EMPTY_TOKEN){
 							amountOfEqualToken++;
@@ -168,7 +164,7 @@ static int trivialGameOver(Board const& board, int ** algorithmMatrix) //This fu
 					}
 					j = yCapturated; 
 					if (!nextControl){
-						return algorithmMatrix[i][j];
+						token = algorithmMatrix[i][j];
 					}
 					nextControl=false; amountOfEqualToken=0;
 					}
@@ -176,7 +172,7 @@ static int trivialGameOver(Board const& board, int ** algorithmMatrix) //This fu
 				// D I A G O N A L  --> Q 1  t o  Q 3
 
 				
-				if (j + winCondition <= height && i + winCondition <= width){  //We check the 2 possible diagonals wins.
+				if (j + winCondition <= height && i + winCondition <= width && token==(int)Token_values::EMPTY_TOKEN){  //We check the 2 possible diagonals wins.
 					j = j + winCondition - 1;
 					while (!nextControl && amountOfEqualToken<winCondition && j > 0 && i + 1 < width){ //Increasing Diagonal.
 						if (algorithmMatrix[i][j] == algorithmMatrix[i+1][j-1] && algorithmMatrix[i][j]!=(int)Token_values::EMPTY_TOKEN){
@@ -188,7 +184,7 @@ static int trivialGameOver(Board const& board, int ** algorithmMatrix) //This fu
 					}
 					i = xCapturated; j = yCapturated;
 					if (!nextControl){
-						return algorithmMatrix[i+1][j + winCondition-1];
+						token = algorithmMatrix[i+1][j + winCondition-1];
 					}
 					nextControl=false; amountOfEqualToken=0;
 
@@ -205,8 +201,16 @@ static int trivialGameOver(Board const& board, int ** algorithmMatrix) //This fu
 					}
 					i = xCapturated; j = yCapturated;
 					if (!nextControl){
-						return algorithmMatrix[i][j];
+						token = algorithmMatrix[i][j];
 					}
+				}
+
+				if ((algorithmMatrix[i][j]) == (int)Token_values::EMPTY_TOKEN){
+					fullBoard=false;
+				}
+				if (token>0) //We found a victory!
+				{
+					return token;
 				}
 			}
 
@@ -218,7 +222,7 @@ static int trivialGameOver(Board const& board, int ** algorithmMatrix) //This fu
 		}
 	}
 
-	static int alpha_beta(int depth, int alpha, int beta, bool actualPlayer, Board const& board, int ** algorithmMatrix)
+	static int alpha_beta(int depth, int alpha, int beta, bool actualPlayer, Board const& board, std::vector<std::vector<int>>& algorithmMatrix)
 		{
 		std::vector<Coordinates> movs = getMovs(board,algorithmMatrix);
 		bool pruning =false;
@@ -264,12 +268,11 @@ static int trivialGameOver(Board const& board, int ** algorithmMatrix) //This fu
 	}
 
 
-	static Coordinates play(Board const& board, int ** algorithmMatrix, std::string name)  //Function that obtains the final move to make.
+	static Coordinates play(Board const& board, std::vector<std::vector<int>>& algorithmMatrix)  //Function that obtains the final move to make.
 	{
 		Coordinates coords{0,0};
 		if (board.valid()){
 			std::vector<Coordinates> movs = getMovs(board,algorithmMatrix);
-
 			bool actualPlayer = true; //It carries the context of which player is about to put a token. If it is true, then is the player who first called the method.
 									   //Otherwise, it's your rival.
 			int alpha = -std::numeric_limits<int>::max(); //-Infinite
@@ -300,12 +303,10 @@ static int trivialGameOver(Board const& board, int ** algorithmMatrix) //This fu
 		//0 --> Rival Player.
 		//2 --> Empy Tile.*/
 
-	static int** initializeAlphaBeta(Board const& board, std::string const& name)
+	static std::vector<std::vector<int>> initializeAlphaBeta(Board const& board, std::string const& name)
 	{
-		int  ** algorithmMatrix = new int *[board.width()];
-
+		std::vector<std::vector<int>> algorithmMatrix(board.width(),std::vector<int>(board.height()));
 		for (int i = 0 ; i < board.width() ; i++){
-			algorithmMatrix[i] = new int[board.height()];
 			for (int j = 0 ; j < board.height() ; j++){
 				Coordinates c{i,j};
 				if (board.tile(c)->owner().has_value()){
@@ -316,14 +317,15 @@ static int trivialGameOver(Board const& board, int ** algorithmMatrix) //This fu
 						algorithmMatrix[i][j] = (int) Token_values::RIVAL_TOKEN;	
 					}
 				}
-				else{
-					algorithmMatrix[i][j] = (int) Token_values::EMPTY_TOKEN;
-				}
-
 			}
 		}
 		return algorithmMatrix;
 	}
+
+
+
+
+	//PlayerExe.h Implementations.
 
 	PlayerExe::PlayerExe(std::string const& name):mName(name){
 	}
@@ -333,8 +335,8 @@ static int trivialGameOver(Board const& board, int ** algorithmMatrix) //This fu
 	}
 
 	Coordinates PlayerExe::play(Board const& board) const{
-		int  ** algorithmMatrix = ttt::initializeAlphaBeta(board,name()); 
-		return ttt::play(board,algorithmMatrix,name());
+		std::vector<std::vector<int>> algorithmMatrix = ttt::initializeAlphaBeta(board,name()); 
+		return ttt::play(board,algorithmMatrix);
 	}
 
 } // namespace ttt

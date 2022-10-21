@@ -15,21 +15,6 @@ public:
 
 private:
 	std::string mName;
-
-	
-
-
-
-
-
-
-
-
-
-
-
-
-
 };
 
 } // namespace ttt
