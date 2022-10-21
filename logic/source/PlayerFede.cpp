@@ -3,95 +3,82 @@
 #include "Board.h"
 #include "Coordinates.h"
 #include "Tile.h"
+#include <iostream>
 
 namespace ttt
 {
-/*
- * Given a map an owner and a coord, assings owner to Spot at coord in map
- * then updates the score of neighbouring Spots
- */
-static void addAt(Spot** myMap, players owner, Coordinates const& coord)
+namespace constants
 {
-	int value = 0;
-	if (owner == PLAYER)
-		value = 1;
-	else if (owner == OTHER)
-		value = -1;
-
-	//Assing owner to spot
-	myMap[coord.x][coord.y].setOwner(owner);
-	
-	//Add score to neighbours
-	for (int i = -1; i < 2; i++)
-	{
-		for (int j = -1; j < 2; j++) {
-			if (coord.x + i < 3 && coord.x + i >= 0 && coord.y + j < 3 && coord.y + j >= 0)
-				myMap[coord.x + i][coord.y].addScore(value); //For each neighbour Player +1 --- For each neighbour OTHER -1
-		}
-	}
+const int NOTACOORD = -1;
+enum class PLAYERS : char
+{
+	FIRST = 'X',
+	SECOND = 'O',
+	NONE = ' '
+};
 }
 
-/*
- * Given a board and a player, creates a dummyboard
- * assigning PLAYER value to player owned spots, OTHER value
- * to non player owned spots and NONE value to ownerless Spots
- */
-static Spot** fillBoard(Board const& board, PlayerFede const& player)
+struct Spot
 {
-	//Reserve Memory
-	Spot** myMap = new Spot* [board.width()];
-	for (int i = 0; i < board.width(); i++)
-		myMap[i] = new Spot[board.height()];
+	int mScore{ 0 };
+	constants::PLAYERS mOwner = constants::PLAYERS::NONE;
+};
 
-	//Add owners to dummy
-	for (int i = 0; i < board.width(); i++)
-	{
-		myMap[i] = new Spot[board.height()];
-		for (int j{ 0 }; j < board.height(); j++)
-		{
-			if (board.tile({ i,j })->owner().has_value())
-			{
-				if (&board.tile({ i,j })->owner().value().get() == &player)
-				{
-					addAt(myMap, PLAYER, { i,j });
-				}
-				else
-				{
-					addAt(myMap, OTHER, { i,j });
-				}
-			}
-			else
-				addAt(myMap, NONE, { i,j });
-		}
-	}
-
-	return myMap;
-}
+using SpotMat = std::vector<std::vector<Spot>>;
 
 /*
- * Given non NULL dummyboard. Frees memory
+ * Given a dummyboard, coords and dimentions,
+ * returns if spot at coords is valid
  */
-static void release(Spot** myBoard, int width)
+static bool checkValid(SpotMat& board, int x, int y)
 {
-	if (myBoard != nullptr)
-	{
-		for (int i{ 0 }; i < width; i++)
-			delete[]myBoard[i];
-		delete[] myBoard;
-		myBoard = nullptr;
-	}
+	return (x < board.size() && x >= 0 && y < board[0].size() && y >= 0);
 }
+
 /*
  * Given a dummyboard, coords, dimentions and an owner,
  * returns if owner owns the Spot at coords in the dummyboard
  * if spot invalid also returns false
  */
-static bool check(Spot** board, int x, int y, char who, int width = 3, int height = 3)
+static bool check(SpotMat& board, int x, int y, constants::PLAYERS who)
 {
-	if (x < width && x >= 0 && y < height && y >= 0)
-		return board[x][y].owner() == who;
-	else
-		return false;
+	return (checkValid(board, x, y) && board[x][y].mOwner == who);
+}
+
+/*
+ * Given a board an owner and a coord, assings owner to Spot at coord in board
+ * then updates the score of neighbouring Spots
+ */
+static void addAt(SpotMat& myBoard, constants::PLAYERS owner, Coordinates const& coord)
+{
+	int value = owner == constants::PLAYERS::FIRST ? 1 : -1;
+
+	//Assing owner to spot
+	myBoard[coord.x][coord.y].mOwner = owner;
+
+	if (owner != constants::PLAYERS::NONE)
+	{
+		//Add score to neighbours
+		for (int i = -1; i < 2; i++)
+		{
+			for (int j = -1; j < 2; j++)
+			{
+				if (checkValid(myBoard, coord.x + i, coord.y + j))
+				{
+					//if neighbour and current share owner, set additional scores
+					if (owner == myBoard[coord.x + i][coord.y + j].mOwner)
+					{
+						if (checkValid(myBoard, coord.x - i, coord.y - j))
+							myBoard[coord.x - i][coord.y - j].mScore += value; //3 in line assing simple points again
+
+						if (checkValid(myBoard, coord.x + i * 2, coord.y + j * 2))
+							myBoard[coord.x + 2 * i][coord.y + 2 * j].mScore += 2 * value; //3 in line assing double points
+					}
+					myBoard[coord.x + i][coord.y + j].mScore += value; //For each neighbour FIRST +1 --- For each neighbour SECOND -1
+				}
+			}
+		}
+	}
 }
 
 /*
@@ -99,14 +86,14 @@ static bool check(Spot** board, int x, int y, char who, int width = 3, int heigh
  * returns if they exists the winning movement coords.
  * if they don't exist it returns invalid coords
  */
-Coordinates winningCoords(Spot** myBoard, players who, int width = 3, int height = 3, int winCon = 3)
+Coordinates winningCoords(SpotMat& myBoard, constants::PLAYERS who, int winCon = 3)
 {
 	//For each spot in dummy board, get if winnable
-	for (int x = 0; x < width; x++)
+	for (int x = 0; x < myBoard.size(); x++)
 	{
-		for (int y = 0; y < height; y++)
+		for (int y = 0; y < myBoard[x].size(); y++)
 		{
-			if (myBoard[x][y].owner() == NONE)
+			if (myBoard[x][y].mOwner == constants::PLAYERS::NONE)
 			{
 				int vertical = 1;
 				int horizontal = 1;
@@ -114,42 +101,42 @@ Coordinates winningCoords(Spot** myBoard, players who, int width = 3, int height
 				int diagonal2 = 1;
 				for (int w = 1; w < winCon; w++)
 				{
-					if (check(myBoard, x + w, y, who, width, height))
+					if (check(myBoard, x + w, y, who))
 					{
 						horizontal++;
 					}
 
-					if (check(myBoard, x - w, y, who, width, height))
+					if (check(myBoard, x - w, y, who))
 					{
 						horizontal++;
 					}
 
-					if (check(myBoard, x, y + w, who, width, height))
+					if (check(myBoard, x, y + w, who))
 					{
 						vertical++;
 					}
 
-					if (check(myBoard, x, y - w, who, width, height))
+					if (check(myBoard, x, y - w, who))
 					{
 						vertical++;
 					}
 
-					if (check(myBoard, x + w, y + w, who, width, height))
+					if (check(myBoard, x + w, y + w, who))
 					{
 						diagonal++;
 					}
 
-					if (check(myBoard, x - w, y - w, who, width, height))
+					if (check(myBoard, x - w, y - w, who))
 					{
 						diagonal++;
 					}
 
-					if (check(myBoard, x - w, y + w, who, width, height))
+					if (check(myBoard, x - w, y + w, who))
 					{
 						diagonal2++;
 					}
 
-					if (check(myBoard, x + w, y - w, who, width, height))
+					if (check(myBoard, x + w, y - w, who))
 					{
 						diagonal2++;
 					}
@@ -164,57 +151,79 @@ Coordinates winningCoords(Spot** myBoard, players who, int width = 3, int height
 
 	}
 
-	return { NOTACOORD,NOTACOORD };
+	return { constants::NOTACOORD, constants::NOTACOORD };
 }
 
-
-static Coordinates play(Board const& board, PlayerFede const& player)
+/*
+ * Given a board and a player, creates a dummyboard
+ * assigning FIRST value to FIRST owned spots, SECOND value
+ * to non FIRST owned spots and NONE value to ownerless Spots
+ */
+static SpotMat fillBoard(Board const& board, PlayerFede const& player, SpotMat& myBoard)
 {
-	Coordinates coord = { NOTACOORD,NOTACOORD };
+	//Add owners to dummy
+	for (int i = 0; i < board.width(); i++)
+	{
+		for (int j{ 0 }; j < board.height(); j++)
+		{
+			if (board.tile({ i,j })->owner().has_value())
+			{
+				if (&board.tile({ i,j })->owner().value().get() == &player)
+				{
+					addAt(myBoard, constants::PLAYERS::FIRST, { i,j });
+				}
+				else
+				{
+					addAt(myBoard, constants::PLAYERS::SECOND, { i,j });
+				}
+			}
+			else
+				addAt(myBoard, constants::PLAYERS::NONE, { i,j });
+		}
+	}
+
+	return myBoard;
+}
+
+Coordinates PlayerFede::play(Board const& board) const
+{
+	Coordinates coord = { constants::NOTACOORD,constants::NOTACOORD };
 
 	if (board.valid())
 	{
 		//Initialize dummy board
-		Spot** myBoard = fillBoard(board, player);
-		int bestScore = MAXIMUM;
+		SpotMat myBoard(board.width(), std::vector<Spot>(board.height()));
+		fillBoard(board, *this, myBoard);
+		int bestScore = std::numeric_limits<int>::min();
 
-		//Check if PLAYER can win in the next move
-		coord = winningCoords(myBoard, PLAYER, board.width(), board.height(), board.winCondition());
-		if (coord.x != NOTACOORD || coord.y != NOTACOORD)
+		//Check if FIRST can win in the next move
+		coord = winningCoords(myBoard, constants::PLAYERS::FIRST, board.winCondition());
+		if (coord.x == constants::NOTACOORD && coord.y == constants::NOTACOORD)
 		{
-			//free memory before return
-			release(myBoard, board.width());
-			return coord;
+			//Check if SECOND can win in the next move
+			coord = winningCoords(myBoard, constants::PLAYERS::SECOND, board.winCondition());
 		}
 
-		//Check if OTHER can win in the next move
-		coord = winningCoords(myBoard, OTHER, board.width(), board.height(), board.winCondition());
-		if (coord.x != NOTACOORD || coord.y != NOTACOORD)
+		if (coord.x == constants::NOTACOORD && coord.y == constants::NOTACOORD)
 		{
-			//free memory before return
-			release(myBoard, board.width());
-			return coord;
-		}
-
-		//Get Highest score from the dummy board
-		for (int i = 0; i < board.width(); i++)
-		{
-			for (int j = 0; j < board.width(); j++)
+			//Get Highest score from the dummy board
+			for (int i = 0; i < board.width(); i++)
 			{
-				if (myBoard[i][j].owner() == NONE && myBoard[i][j].score() < bestScore)
+				for (int j = 0; j < board.width(); j++)
 				{
-					coord = { i,j };
-					bestScore = myBoard[i][j].score();
+					if (myBoard[i][j].mOwner == constants::PLAYERS::NONE && abs(myBoard[i][j].mScore) > bestScore)
+					{
+						coord = { i,j };
+						bestScore = myBoard[i][j].mScore;
+					}
 				}
 			}
+			
 		}
-
-		//free memory before return
-		release(myBoard, board.width());
 	}
 
 	//if nothing else return origin
-	if (coord.x == NOTACOORD || coord.y == NOTACOORD)
+	if (coord.x == constants::NOTACOORD || coord.y == constants::NOTACOORD)
 		coord = { 0,0 };
 	return coord;
 }
@@ -226,27 +235,6 @@ std::string const& PlayerFede::name() const
 {
 	return mName;
 }
-Coordinates PlayerFede::play(Board const& board) const
-{
-	_CrtDumpMemoryLeaks();
-	return ttt::play(board, *this);
-}
 
-char Spot::owner() const
-{
-	return mOwner;
-}
-int Spot::score() const
-{
-	return mScore;
-}
-int Spot::addScore(int amount)
-{
-	mScore += amount;
-	return mScore;
-}
-void Spot::setOwner(char owner)
-{
-	mOwner = owner;
-}
+
 } // namespace ttt
