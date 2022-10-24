@@ -17,7 +17,6 @@ enum class Heuristic_values{
 	TIE=0,
 	WIN=10,
 	DEFEAT=-10,
-	INDIFERENT=-5
 };
 
 //Token values on the board.
@@ -78,9 +77,10 @@ namespace ttt
 
 
 /*The semantics of the values ​​to obtain
-	If the game isn't over, it will return a heuristic value between -9 to -1 or  1 to 9, depending on the player that is playing. Could be 5 or randomized.
-	If the actual player wins, the function will return the value 10 minus the amount of levels of depth that we generated.
-	If the actual player looses, the function will return the value -10 plus the amount of levels of depth that we generated.
+	If the game isn't over, it will return the depth value. Bigger the value, bigger the odds to find a victory path.
+	We add to the win and defeat value the depth value, to ashure that iven the worst win will be always better that any partial state.
+		If the actual player wins, the function will return the value (10+depth) minus the amount of levels of depth that we generated.
+		If the actual player looses, the function will return the value (-10-depth) plus the amount of levels of depth that we generated.
 	If there is a tie, it will return 0.*/
 
 
@@ -90,18 +90,16 @@ namespace ttt
 		switch (gameOverStatus)
 		{
 			case 1:
-				heuristicValue =(int) Heuristic_values::WIN - (DEPTH_VALUE - depth); //
+				heuristicValue =((int) Heuristic_values::WIN + depth)  - (DEPTH_VALUE - depth); //
 			break;
 			case 2:
-				heuristicValue =(int) Heuristic_values::DEFEAT + (DEPTH_VALUE - depth);
+				heuristicValue =((int) Heuristic_values::DEFEAT - depth) + (DEPTH_VALUE - depth);
 			break;
 			case 3:
 				heuristicValue =(int) Heuristic_values::TIE;
 			break;
-			default:
-				//srand(time(0));                                //We can choose to calculate the heuristic value of partial states randomly, to increments the odds to not get a tie 
-   				//heuristicValue = 1 + (rand()%10);              //between two instances of the same IAs. Also, this will increase the odds to prune more branches.
-				heuristicValue =(int) Heuristic_values::INDIFERENT;
+			default:	
+				heuristicValue = depth;
 				if (!isActualPlayer){
 					heuristicValue = - heuristicValue;
 				}
@@ -125,9 +123,6 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& al
 		int winCondition = board.winCondition();
 		bool nextControl= false;
 		int token = (int)Token_values::EMPTY_TOKEN; //If token gets a value that is diferent of the empty token, a victory has cocurred!
-
-		
-
 		for (int i = 0 ; i < width ; i++ )
 		{
 			for (int j = 0 ; j < height ; j++)
@@ -146,7 +141,6 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& al
 					}
 					i = xCapturated;
 					if (amountOfEqualToken==winCondition){ 
-						//std::cout<<"VICTORIA FILA EN POS: {"<<i<<" , "<<j<<"} Con ficha: "<<algorithmMatrix[i][j]<<std::endl;
 						token = algorithmMatrix[i][j];
 					}
 					nextControl=false; amountOfEqualToken=1;
@@ -167,7 +161,6 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& al
 					j = yCapturated; 
 
 					if (amountOfEqualToken==winCondition){
-						//std::cout<<"VICTORIA COLUMNA EN POS: {"<<i<<" , "<<j<<"} Con ficha: "<<algorithmMatrix[i][j]<<std::endl;
 						token = algorithmMatrix[i][j];
 					}
 					nextControl=false; amountOfEqualToken=1;
@@ -188,7 +181,6 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& al
 						}
 					}
 					if (amountOfEqualToken==winCondition){
-						//std::cout<<"VICTORIA DIAGONAL INVERTIDA EN POS: {"<<i<<" , "<<j<<"} Con ficha: "<<algorithmMatrix[i][j]<<std::endl;
 						token = algorithmMatrix[i-1][j+1];
 					}
 					nextControl=false; amountOfEqualToken=1;
@@ -206,7 +198,6 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& al
 					}
 					i = xCapturated; j = yCapturated;
 					if (amountOfEqualToken==winCondition){
-						//std::cout<<"VICTORIA DIAGONAL EN POS: {"<<i<<" , "<<j<<"} Con ficha: "<<algorithmMatrix[i][j]<<std::endl;
 						token = algorithmMatrix[i][j];
 					}
 				}
@@ -337,7 +328,6 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& al
 	Coordinates PlayerExe::play(Board const& board) const{
 		std::vector<std::vector<int>> algorithmMatrix = ttt::initializeAlphaBeta(board,name()); 
 		return ttt::play(board,algorithmMatrix);
-
 	}
 
 } // namespace ttt
