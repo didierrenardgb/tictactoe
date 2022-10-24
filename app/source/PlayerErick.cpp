@@ -72,6 +72,7 @@ static void printBoard(std::vector<std::vector<int>> const& myBoard, int const& 
 		}
 		std::cout << std::endl;
 	}
+	std::cout << "----------" << std::endl;
 }
 
 static const int evaluate(Board const& board, std::vector<std::vector<int>> const& myBoard, int row, int column){
@@ -402,8 +403,8 @@ static int searchPlay(Board const& board, std::vector<std::vector<int>> myBoard,
 	if(isMaximizer){
 		//Start of oponent path.
 		int worstUtility = std::numeric_limits<int>::max();
-		for(size_t r = 0; r < MAXR; r++){
-			for(size_t c = 0; c < MAXC; c++){
+		for(int r = 0; r < MAXR; r++){
+			for(int c = 0; c < MAXC; c++){
 				//Check if the coordinate is occupied or not.
 				if(myBoard[r][c] == 0){
 					//Play on that coordinate
@@ -421,8 +422,8 @@ static int searchPlay(Board const& board, std::vector<std::vector<int>> myBoard,
 	}
 	else{
 		int bestUtility = std::numeric_limits<int>::min();
-		for(size_t r = 0; r < MAXR; r++){
-			for(size_t c = 0; c < MAXC; c++){
+		for(int r = 0; r < MAXR; r++){
+			for(int c = 0; c < MAXC; c++){
 				//Check if the coordinate is occupied or not.
 				if(myBoard[r][c] == 0){
 					//Play on that coordinate
@@ -460,8 +461,8 @@ static Coordinates minimax(Board const& board){
 
 	//The board here is a matrix where you can put a token anywhere that's not occupied.
 	//Considering that, we need to roam for all the posible places to check their worth value, and select the best one.
-	for(size_t r = 0; r < MAXR; r++){
-		for(size_t c = 0; c < MAXC; c++){
+	for(int r = 0; r < MAXR; r++){
+		for(int c = 0; c < MAXC; c++){
 			//Check if the coordinate is occupied or not.
 			if(myBoard[r][c] == 0){
 				//Play on that coordinate
