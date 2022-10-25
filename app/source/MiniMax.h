@@ -23,50 +23,36 @@
 *                                                              *
 ****************************************************************/
 
-#include "PlayerErick.h"
+#pragma once
 
-#include "Board.h"
-#include "Coordinates.h"
-#include "Tile.h"
-#include "MiniMax.h"
-
-#include <random>
-
-#include <iostream>
-#include <limits>
+#include "IPlayer.h"
+#include <vector>
 
 namespace ttt
 {
-const int pointsForWin = 5;
-const int maxDepth = 4;
 
-static Coordinates play(Board const& board)
+//This class is used for the implementation of the minimax algorithm. 
+class MiniMax
 {
-	if (board.valid())
-	{
-		MiniMax minimaxObj(board);
-		//Debugging
-		minimaxObj.printBoard();
-		
-		return minimaxObj.play();
-	}
+public:
+    MiniMax(Board const& board);
+    Coordinates play();
+    void printBoard();
 
-	return { 0, 0 };
+private:
+    //Methods
+    void copyBoard(Board const& board);
+    int searchPlay(int const& row, int const& column, int depth, bool isMaximizer);
+    const int evaluate(int const& row, int const& column); //Heuristic function.
+
+    //Attributes
+    std::vector<std::vector<int>> myBoard;
+    int MAXR;
+    int MAXC;
+    bool isEmpty;
+    const int pointsForWin = 5;
+    const int maxDepth = 4;
+
+};
+
 }
-
-PlayerErick::PlayerErick():
-	mName("Erick")
-{
-}
-
-std::string const& PlayerErick::name() const
-{
-	return mName;
-}
-
-Coordinates PlayerErick::play(Board const& board) const
-{
-	return ttt::play(board);
-}
-
-} // namespace ttt
