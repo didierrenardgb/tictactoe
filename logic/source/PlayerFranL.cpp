@@ -196,7 +196,7 @@ namespace ttt
 								{
 								
 										smalltempboard[i][j] = tempboard[i+offsetX][j+offsetY];
-										total_marks += abs(smalltempboard[i][j]);
+										total_marks += std::abs(smalltempboard[i][j]);
 								}
 							
 
