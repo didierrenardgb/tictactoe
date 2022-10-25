@@ -16,4 +16,5 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY bin/${GENERATOR_NAME}/)
 
 include_directories(${include_dirs})
 
+add_library(${PROJECT_NAME} ${src_files} ${header_files})
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
