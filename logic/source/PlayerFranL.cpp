@@ -210,7 +210,8 @@ namespace ttt
 							if (solution.depth < lowest_depth)
 							{
 								lowest_depth = solution.depth;
-								coords = solution.coords;
+								coords.x = solution.coords.x+offsetX;
+								coords.y = solution.coords.y + offsetY;
 							}
 						}
 						total_marks = 0;
