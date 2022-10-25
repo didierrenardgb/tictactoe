@@ -40,6 +40,8 @@ namespace ttt
 	static const int DEPTH_VALUE = 5; //The value of depth that will be use in our algorithm.
 
 
+	
+
 	//Prints the current state of the board  -tracking meanings only-.
 	static void printBoardState(Board const& board,std::vector<std::vector<int>>& algorithmMatrix){
 		for (int i = 0 ; i < board.width() ; i++){
@@ -50,6 +52,9 @@ namespace ttt
 		}
 		std::cout<<std::endl;std::cout<<std::endl;std::cout<<std::endl;
 	}
+
+
+
 
 	static void executeMovement(std::vector<std::vector<int>> & algorithmMatrix, Coordinates const& c, bool const& actualPlayer) //Function that execute a movement.
 	{
@@ -117,6 +122,11 @@ namespace ttt
 
 //This function checks that if the amount of equal token found in the board its the same as the win condition.
 //Also, its initialice all the variables needed for the trivialGameOver.
+
+
+
+
+
 static int foundAWin(int &i, int &j, int const& iCapturated, int const& jCapturated, int&AmountOfEqualToken, int const& winCondition, bool& moveToNextWinControl, std::vector<std::vector<int>>& algorithmMatrix)
 {
 	int tokenValue = (int) Token_values::EMPTY_TOKEN;
@@ -144,7 +154,6 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& al
 			for (int j = 0 ; j < height ; j++)
 			{
 				int iCapturated = i; int jCapturated= j; int amountOfEqualToken=1;
-
 				if (i + winCondition <=width){  // If we have the minimun amount of tiles to check, then the algorithm will proceed to  check the actual row.
 					while (!moveToNextWinControl && amountOfEqualToken < winCondition && i + 1 <width){
 						if (algorithmMatrix[i][j] == algorithmMatrix[i+1][j] && algorithmMatrix[i][j] != (int)Token_values::EMPTY_TOKEN){
@@ -156,7 +165,6 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& al
 					}
 					token = foundAWin(i,j,iCapturated,jCapturated,amountOfEqualToken,winCondition,moveToNextWinControl,algorithmMatrix);
 				}
-
 				if (j+ winCondition <= height && token==(int)Token_values::EMPTY_TOKEN){ //Now, we also ask that if there is no victory yet. Column check
 					while (!moveToNextWinControl && amountOfEqualToken<winCondition && j + 1 < height){
 						if (algorithmMatrix[i][j] == algorithmMatrix[i][j+1] && algorithmMatrix[i][j] != (int) Token_values::EMPTY_TOKEN){
@@ -168,7 +176,6 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& al
 					}
 					token = foundAWin(i,j,iCapturated,jCapturated,amountOfEqualToken,winCondition,moveToNextWinControl,algorithmMatrix);
 				}
-
 				if (j + winCondition <= height && i + winCondition <= width && token==(int)Token_values::EMPTY_TOKEN){  //We check the 2 possible diagonals wins. In this case Q1  to  Q4.
 					j = j + winCondition - 1;
 					while (!moveToNextWinControl && amountOfEqualToken<winCondition && j > 0 && i + 1 < width){ //Increasing Diagonal.
@@ -180,12 +187,10 @@ static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& al
 						}
 					}
 					token = foundAWin(i,j,iCapturated,jCapturated,amountOfEqualToken,winCondition,moveToNextWinControl,algorithmMatrix);
-
 					while (!moveToNextWinControl && amountOfEqualToken < winCondition && j + 1 < height && i + 1 < width && token==(int)Token_values::EMPTY_TOKEN){//Decreasing Diagonal (Q2 to Q4).
 						if (algorithmMatrix[i][j] == algorithmMatrix[i+1][j+1] && algorithmMatrix[i][j]!=(int)Token_values::EMPTY_TOKEN){
 							amountOfEqualToken++;
-							j++; 
-							i++;
+							j++; i++;
 						}else{
 							moveToNextWinControl = true;
 						}
