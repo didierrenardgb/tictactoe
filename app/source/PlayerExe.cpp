@@ -67,7 +67,7 @@ namespace ttt
 		output.clear();
 		for (int i = 0 ; i < board.width() ; i++){
 			for (int j = 0 ; j < board.height() ; j++){
-				if (algorithmMatrix[i][j]==0){
+				if (algorithmMatrix[i][j]==(int)Token_values::EMPTY_TOKEN){
 					output.push_back(Coordinates{i,j});
 				}
 			}
@@ -115,98 +115,88 @@ namespace ttt
 	If there is a tie, it will return 3.*/
 
 
+//This function checks that if the amount of equal token found in the board its the same as the win condition.
+//Also, its initialice all the variables needed for the trivialGameOver.
+static int foundAWin(int &i, int &j, int const& iCapturated, int const& jCapturated, int&AmountOfEqualToken, int const& winCondition, bool& moveToNextWinControl, std::vector<std::vector<int>>& algorithmMatrix)
+{
+	int tokenValue = (int) Token_values::EMPTY_TOKEN;
+	if (AmountOfEqualToken==winCondition){
+		tokenValue = algorithmMatrix[i][j];
+	}
+	i = iCapturated;
+	j = jCapturated;
+	moveToNextWinControl=false;
+	AmountOfEqualToken=1;
+	return tokenValue;
+}
+
+
 static int trivialGameOver(Board const& board, std::vector<std::vector<int>>& algorithmMatrix) //This function can recognize if we are in a victory state.
 	{																							//Its works with a trivial value of win Condition.
 		bool fullBoard = true; //We asume the Tie Game Over.
 		int width = board.width();
 		int height = board.height();
 		int winCondition = board.winCondition();
-		bool nextControl= false;
+		bool moveToNextWinControl= false;
 		int token = (int)Token_values::EMPTY_TOKEN; //If token gets a value that is diferent of the empty token, a victory has cocurred!
 		for (int i = 0 ; i < width ; i++ )
 		{
 			for (int j = 0 ; j < height ; j++)
 			{
-				int xCapturated = i; int yCapturated= j; int amountOfEqualToken=1;
+				int iCapturated = i; int jCapturated= j; int amountOfEqualToken=1;
 
-				// R O W    C O N T R O L .
-				if (i + winCondition <=width){  //we check the actual row.
-					while (!nextControl && amountOfEqualToken < winCondition && i + 1 <width){
+				if (i + winCondition <=width){  // If we have the minimun amount of tiles to check, then the algorithm will proceed to  check the actual row.
+					while (!moveToNextWinControl && amountOfEqualToken < winCondition && i + 1 <width){
 						if (algorithmMatrix[i][j] == algorithmMatrix[i+1][j] && algorithmMatrix[i][j] != (int)Token_values::EMPTY_TOKEN){
 							amountOfEqualToken++;
 							i++;
 						}else{
-							nextControl = true;
+							moveToNextWinControl = true;
 						}
 					}
-					i = xCapturated;
-					if (amountOfEqualToken==winCondition){ 
-						token = algorithmMatrix[i][j];
-					}
-					nextControl=false; amountOfEqualToken=1;
+					token = foundAWin(i,j,iCapturated,jCapturated,amountOfEqualToken,winCondition,moveToNextWinControl,algorithmMatrix);
 				}
 
-				// C O L U M N    C O N T R O L .
-
-
-				if (j+ winCondition <= height && token==(int)Token_values::EMPTY_TOKEN){ //We check the actual column
-					while (!nextControl && amountOfEqualToken<winCondition && j + 1 < height){
+				if (j+ winCondition <= height && token==(int)Token_values::EMPTY_TOKEN){ //Now, we also ask that if there is no victory yet. Column check
+					while (!moveToNextWinControl && amountOfEqualToken<winCondition && j + 1 < height){
 						if (algorithmMatrix[i][j] == algorithmMatrix[i][j+1] && algorithmMatrix[i][j] != (int) Token_values::EMPTY_TOKEN){
 							amountOfEqualToken++;
 							j++;
 						}else{
-							nextControl = true;
+							moveToNextWinControl = true;
 						}
 					}
-					j = yCapturated; 
+					token = foundAWin(i,j,iCapturated,jCapturated,amountOfEqualToken,winCondition,moveToNextWinControl,algorithmMatrix);
+				}
 
-					if (amountOfEqualToken==winCondition){
-						token = algorithmMatrix[i][j];
-					}
-					nextControl=false; amountOfEqualToken=1;
-					}
-
-				// D I A G O N A L  --> Q 1  t o  Q 3
-
-				
-				if (j + winCondition <= height && i + winCondition <= width && token==(int)Token_values::EMPTY_TOKEN){  //We check the 2 possible diagonals wins.
-					i = xCapturated; j = yCapturated;
+				if (j + winCondition <= height && i + winCondition <= width && token==(int)Token_values::EMPTY_TOKEN){  //We check the 2 possible diagonals wins. In this case Q1  to  Q4.
 					j = j + winCondition - 1;
-					while (!nextControl && amountOfEqualToken<winCondition && j > 0 && i + 1 < width){ //Increasing Diagonal.
+					while (!moveToNextWinControl && amountOfEqualToken<winCondition && j > 0 && i + 1 < width){ //Increasing Diagonal.
 						if (algorithmMatrix[i][j] == algorithmMatrix[i+1][j-1] && algorithmMatrix[i][j]!=(int)Token_values::EMPTY_TOKEN){
 							amountOfEqualToken++;
 							j--; i++;
 						}else{
-							nextControl = true;
+							moveToNextWinControl = true;
 						}
 					}
-					if (amountOfEqualToken==winCondition){
-						token = algorithmMatrix[i-1][j+1];
-					}
-					nextControl=false; amountOfEqualToken=1;
+					token = foundAWin(i,j,iCapturated,jCapturated,amountOfEqualToken,winCondition,moveToNextWinControl,algorithmMatrix);
 
-					// D I A G O N A L  --> Q 2  t o  Q 4
-
-					while (!nextControl && amountOfEqualToken < winCondition && j + 1 < height && i + 1 < width){//Decreasing Diagonal.
+					while (!moveToNextWinControl && amountOfEqualToken < winCondition && j + 1 < height && i + 1 < width && token==(int)Token_values::EMPTY_TOKEN){//Decreasing Diagonal (Q2 to Q4).
 						if (algorithmMatrix[i][j] == algorithmMatrix[i+1][j+1] && algorithmMatrix[i][j]!=(int)Token_values::EMPTY_TOKEN){
 							amountOfEqualToken++;
 							j++; 
 							i++;
 						}else{
-							nextControl = true;
+							moveToNextWinControl = true;
 						}
 					}
-					i = xCapturated; j = yCapturated;
-					if (amountOfEqualToken==winCondition){
-						token = algorithmMatrix[i][j];
-					}
+					token = foundAWin(i,j,iCapturated,jCapturated,amountOfEqualToken,winCondition,moveToNextWinControl,algorithmMatrix);
 				}
 
-				if ((algorithmMatrix[i][j]) == (int)Token_values::EMPTY_TOKEN){
+				if ((algorithmMatrix[i][j]) == (int)Token_values::EMPTY_TOKEN){ //If we found at least one tile that isn't empty, then there is no tie yet!.
 					fullBoard=false;
 				}
-				if (token!=(int)Token_values::EMPTY_TOKEN) //We found a victory!
-				{
+				if (token!=(int)Token_values::EMPTY_TOKEN){ //We found a victory!
 					return token;
 				}
 			}
