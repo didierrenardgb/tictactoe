@@ -69,10 +69,14 @@ static void addAt(SpotMat& myBoard, constants::PLAYERS owner, Coordinates const&
 					if (owner == myBoard[coord.x + i][coord.y + j].mOwner)
 					{
 						if (checkValid(myBoard, coord.x - i, coord.y - j))
+						{
 							myBoard[coord.x - i][coord.y - j].mScore += value; //3 in line assing simple points again
+						}
 
 						if (checkValid(myBoard, coord.x + i * 2, coord.y + j * 2))
+						{
 							myBoard[coord.x + 2 * i][coord.y + 2 * j].mScore += 2 * value; //3 in line assing double points
+						}
 					}
 					myBoard[coord.x + i][coord.y + j].mScore += value; //For each neighbour FIRST +1 --- For each neighbour SECOND -1
 				}
@@ -144,7 +148,9 @@ Coordinates winningCoords(SpotMat& myBoard, constants::PLAYERS who, int winCon =
 
 				int wc = winCon;
 				if ((vertical == wc) || (horizontal == wc) || (diagonal == wc) || (diagonal2 == wc))
+				{
 					return { x , y };
+				}
 				
 			}
 		}
@@ -211,7 +217,7 @@ Coordinates PlayerFede::play(Board const& board) const
 			{
 				for (int j = 0; j < board.width(); j++)
 				{
-					if (myBoard[i][j].mOwner == constants::PLAYERS::NONE && abs(myBoard[i][j].mScore) > bestScore)
+					if (myBoard[i][j].mOwner == constants::PLAYERS::NONE && std::abs(myBoard[i][j].mScore) > bestScore)
 					{
 						coord = { i,j };
 						bestScore = myBoard[i][j].mScore;
@@ -224,7 +230,9 @@ Coordinates PlayerFede::play(Board const& board) const
 
 	//if nothing else return origin
 	if (coord.x == constants::NOTACOORD || coord.y == constants::NOTACOORD)
+	{
 		coord = { 0,0 };
+	}
 	return coord;
 }
 PlayerFede::PlayerFede(std::string const& name) :
@@ -238,3 +246,4 @@ std::string const& PlayerFede::name() const
 
 
 } // namespace ttt
+ 
