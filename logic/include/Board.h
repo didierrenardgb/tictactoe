@@ -13,7 +13,7 @@ struct Coordinates;
 class Board
 {
 public:
-	Board(int width = 4, int height =4, int winCondition = 4);             //Dimentions.
+	Board(int width = 5, int height =5, int winCondition = 5);             //Dimentions.
 	Board(Board const& other);
 	~Board();
 

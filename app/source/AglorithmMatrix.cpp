@@ -21,6 +21,16 @@ enum class Game_Over_Values{
 
 namespace ttt
 {
+
+
+/* We capture the game matrix in its current state with a reduced semantic, only for algorithm propourse.
+   algorithmMatrix will the the pointer to the dynamic matrix that carries our board game.
+   Token semantic:
+		//1 --> Actual Player (the one that invokes the function in the first place).
+		//0 --> Rival Player.
+		//2 --> Empy Tile.*/
+
+
 	AlgorithmMatrix::AlgorithmMatrix(Board const& board, std::string playerName){
 
         width = board.width();
@@ -44,6 +54,7 @@ namespace ttt
 		}
     }
 
+	
     int AlgorithmMatrix::getWidth() const{
         return width;
     } 
@@ -52,7 +63,7 @@ namespace ttt
         return height;
     } 
 
-
+	//Prints the current state of the board  -tracking meanings only-.
 	void AlgorithmMatrix::printBoardState(){
 		for (int i = 0 ; i < width ; i++){
 			for (int j = 0 ; j < height ; j++){
@@ -64,19 +75,19 @@ namespace ttt
 	}
 
 
-    void AlgorithmMatrix::executeMovement(Coordinates const& c, bool const& actualPlayer){
+    void AlgorithmMatrix::executeMovement(Coordinates const& c, bool const& actualPlayer){ //Function that execute a movement.
         if (actualPlayer){
 			matrix[c.x][c.y] = (int)Token_values::CURRENT_PLAYER_TOKEN;}
 		else{
 			matrix[c.x][c.y] = (int) Token_values::RIVAL_TOKEN;}
     }
 
-    void AlgorithmMatrix::undoMovement(Coordinates const& c){
+    void AlgorithmMatrix::undoMovement(Coordinates const& c){ //Function that undo a movement.
 			matrix[c.x][c.y] = (int)Token_values::EMPTY_TOKEN;
     }
 
 
-    std::vector<Coordinates> AlgorithmMatrix::getMovs(){
+    std::vector<Coordinates> AlgorithmMatrix::getMovs(){ //We get all the posible moves to make in the board.
         std::vector<Coordinates> output;
 		output.clear();
 		for (int i = 0 ; i < width ; i++){
@@ -90,7 +101,7 @@ namespace ttt
     }
 
 
-
+//Private function that detects if a victory occurred. In addition, it initializes all the variables of trivialGameOver.
 
 int AlgorithmMatrix::foundAWin(int &i, int &j, int const& iCapturated, int const& jCapturated, int&AmountOfEqualToken, int const& winCondition, bool& moveToNextWinControl)
 {
@@ -106,8 +117,16 @@ int AlgorithmMatrix::foundAWin(int &i, int &j, int const& iCapturated, int const
 }
 
 
+/*The semantics of the values ​​to obtain
+	If the game isn't over, it will return 0.
+	If the actual player wins, the function will return the value 1.
+	If the actual player looses, the function will return the value 2.
+	If there is a tie, it will return 3.*/
 
-    int AlgorithmMatrix::trivialGameOver(){																							//Its works with a trivial value of win Condition.
+
+//Function that seeks a victory. 
+
+    int AlgorithmMatrix::trivialGameOver(){																							
 		bool fullBoard = true; //We asume the Tie Game Over.
 		bool moveToNextWinControl= false;
 		int token = (int)Token_values::EMPTY_TOKEN; //If token gets a value that is diferent of the empty token, a victory has cocurred!
@@ -122,7 +141,7 @@ int AlgorithmMatrix::foundAWin(int &i, int &j, int const& iCapturated, int const
 							amountOfEqualToken++;
 							i++;
 						}else{
-							moveToNextWinControl = true;
+							moveToNextWinControl = true; //If this is true, then on this path there is no longer a possible victory. We must continue to the next control.
 						}
 					}
 					token = foundAWin(i,j,iCapturated,jCapturated,amountOfEqualToken,winCondition,moveToNextWinControl);
@@ -174,8 +193,6 @@ int AlgorithmMatrix::foundAWin(int &i, int &j, int const& iCapturated, int const
 		}else{
 			return (int) Game_Over_Values::THE_GAME_IS_NOT_OVER_YET; //If there is, at least, one tile empty, the game will be not over yet.
 		}
-
-
     }
 
 }
