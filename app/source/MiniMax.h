@@ -35,7 +35,7 @@ namespace ttt
 class MiniMax
 {
 public:
-    MiniMax(Board const& board);
+    MiniMax(Board const& board, std::string player);
     Coordinates play();
     void printBoard();
 
@@ -46,12 +46,11 @@ private:
     const int evaluate(int const& row, int const& column); //Heuristic function.
 
     //Attributes
-    std::vector<std::vector<int>> myBoard;
-    int MAXR;
-    int MAXC;
-    bool isEmpty;
-    const int pointsForWin = 5;
-    const int maxDepth = 4;
+    std::string mPlayer;
+    std::vector<std::vector<int>> mBoard;
+    int mMaxR;
+    int mMaxC;
+    bool mIsEmpty;
 
 };
 

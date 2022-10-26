@@ -40,11 +40,11 @@ namespace ttt
 const int pointsForWin = 5;
 const int maxDepth = 4;
 
-static Coordinates play(Board const& board)
+static Coordinates play(Board const& board, std::string player)
 {
 	if (board.valid())
 	{
-		MiniMax minimaxObj(board);
+		MiniMax minimaxObj(board, player);
 		//Debugging
 		minimaxObj.printBoard();
 		
@@ -66,7 +66,7 @@ std::string const& PlayerErick::name() const
 
 Coordinates PlayerErick::play(Board const& board) const
 {
-	return ttt::play(board);
+	return ttt::play(board, name());
 }
 
 } // namespace ttt
