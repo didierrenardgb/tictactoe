@@ -2,9 +2,7 @@
 
 #include "Board.h"
 #include "Coordinates.h"
-#include "Tile.h"
 
-#include <random>
 #include <iostream>
 
 namespace ttt

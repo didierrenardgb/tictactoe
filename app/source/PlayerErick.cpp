@@ -27,20 +27,12 @@
 
 #include "Board.h"
 #include "Coordinates.h"
-#include "Tile.h"
 #include "MiniMax.h"
-
-#include <random>
-
-#include <iostream>
-#include <limits>
 
 namespace ttt
 {
-const int pointsForWin = 5;
-const int maxDepth = 4;
 
-static Coordinates play(Board const& board, std::string player)
+static Coordinates play(Board const& board, std::string const& player)
 {
 	if (board.valid())
 	{
