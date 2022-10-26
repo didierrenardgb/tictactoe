@@ -15,18 +15,16 @@
 
 
 //Heuristic values of each posible state.
-enum class Heuristic_values{
-	TIE=0,
-	WIN=10,
-	DEFEAT=-10,
+enum class HeuristicValues{
+	tie=0,
+	win=10,
+	defeat=-10,
 };
 
 
 namespace ttt
 {
 	static const int DEPTH_VALUE = 5; //The value of depth that will be use in our algorithm.
-
-
 
 
 //The board is passed as a parameter to know its dimensions. Thanks to that, we can use pointer notations in a simplified way, knowing the dimensions of the structure.
@@ -47,13 +45,13 @@ namespace ttt
 		switch (gameOverStatus)
 		{
 			case 1:
-				heuristicValue =((int) Heuristic_values::WIN + depth)  - (DEPTH_VALUE - depth); //
+				heuristicValue =((int) HeuristicValues::win + depth)  - (DEPTH_VALUE - depth); //
 			break;
 			case 2:
-				heuristicValue =((int) Heuristic_values::DEFEAT - depth) + (DEPTH_VALUE - depth);
+				heuristicValue =((int) HeuristicValues::defeat - depth) + (DEPTH_VALUE - depth);
 			break;
 			case 3:
-				heuristicValue =(int) Heuristic_values::TIE;
+				heuristicValue =(int) HeuristicValues::tie;
 			break;
 			default:	
 				heuristicValue = depth;
@@ -80,7 +78,7 @@ namespace ttt
 
 
 
-	static int alpha_beta(int depth, int alpha, int beta, bool actualPlayer,AlgorithmMatrix matrix)
+	static int alphaBeta(int depth, int alpha, int beta, bool actualPlayer,AlgorithmMatrix matrix)
 		{
 		std::vector<Coordinates> movs = matrix.getMovs();
 		bool pruning =false;
@@ -97,7 +95,7 @@ namespace ttt
 					if (!pruning)
 					{
 						matrix.executeMovement(candidate,actualPlayer); //we execute the movement.
-						value = std::max(value,alpha_beta(depth-1,alpha,beta,!actualPlayer,matrix)); //we search the maximun value for the current player.
+						value = std::max(value,alphaBeta(depth-1,alpha,beta,!actualPlayer,matrix)); //we search the maximun value for the current player.
 						alpha = std::max(alpha,value);
 						if (alpha>=beta){ //if we already found a better movement.
 							pruning = true; //we dont need to keep analizing more posible states in this branch.
@@ -112,7 +110,7 @@ namespace ttt
 				for (Coordinates candidate : movs){ 
 					if (!pruning){
 						matrix.executeMovement(candidate,actualPlayer);
-						value = std::min(value,alpha_beta(depth-1,alpha,beta,!actualPlayer,matrix)); //we search the lesser defeat for the current player.
+						value = std::min(value,alphaBeta(depth-1,alpha,beta,!actualPlayer,matrix)); //we search the lesser defeat for the current player.
 						beta = std::min(beta,value);
 						if (beta<=alpha){
 							pruning=true;
@@ -135,12 +133,12 @@ namespace ttt
 									   //Otherwise, it's your rival.
 			int alpha = -std::numeric_limits<int>::max(); //-Infinite
 			int beta = std::numeric_limits<int>::max(); //Infinite.
-			int best_alpha = alpha;
+			int bestAlpha = alpha;
 			for (Coordinates candidate : movs){ 
 				matrix.executeMovement(candidate,actualPlayer); //We consume a tile.
-				alpha=std::max(alpha,alpha_beta(DEPTH_VALUE, alpha,beta,!actualPlayer,matrix));
-				if (alpha > best_alpha){
-					best_alpha = alpha;
+				alpha=std::max(alpha,alphaBeta(DEPTH_VALUE, alpha,beta,!actualPlayer,matrix));
+				if (alpha > bestAlpha){
+					bestAlpha = alpha;
 					coords = candidate;
 				}
 				matrix.undoMovement(candidate); //We undo the movement.
