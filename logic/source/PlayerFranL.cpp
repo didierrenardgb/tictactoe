@@ -122,9 +122,9 @@ namespace ttt
 				int totalMarks = 0;
 				IntMatrix smallTempboard(board.winCondition());
 				
-				for (int offsetX = 0; offsetX < (board.height() - board.winCondition()); offsetX++)
+				for (int offsetX = 0; offsetX <= (board.height() - board.winCondition()); offsetX++)
 				{
-					for (int offsetY = 0; offsetY < (board.width() - board.winCondition()); offsetY++)
+					for (int offsetY = 0; offsetY <= (board.width() - board.winCondition()); offsetY++)
 					{
 						for (int i = 0; i < board.winCondition(); i++)
 						{
