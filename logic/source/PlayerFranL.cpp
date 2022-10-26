@@ -28,7 +28,7 @@ namespace ttt
 	Coordinates PlayerFranL::finishOff(Board const& board, Coordinates const& excpt) const{
 		IntMatrix testboard(board,mName);
 		
-		Coordinates coords= testboard.finishOffArray(board.height(), board.width(), board.winCondition(), excpt);
+		Coordinates coords= testboard.finishOffArray(excpt);
 		return coords;
 	}
 
@@ -37,7 +37,7 @@ namespace ttt
 	//Optionally accepts a Coordinate to ignore (important for fork detection)
 	Coordinates PlayerFranL::defend(Board const& board, Coordinates const& excpt) const{
 		IntMatrix testboard(board, mName);
-		Coordinates coords= testboard.defendArray(board.height(), board.width(), board.winCondition(), excpt);
+		Coordinates coords= testboard.defendArray(excpt);
 		return coords;
 	}
 
@@ -55,10 +55,10 @@ namespace ttt
 				if (tempboard[i][j] == 0) {
 					tempboard[i][j] = 1;
 
-					coords = tempboard.finishOffArray(board.height(), board.width(), board.winCondition());
+					coords = tempboard.finishOffArray();
 					if (coords.x != -1)
 					{
-						coords = tempboard.finishOffArray(board.height(), board.width(), board.winCondition(),coords);
+						coords = tempboard.finishOffArray(coords);
 						if (coords.x != -1)
 						{
 							return { i,j };
@@ -86,10 +86,10 @@ namespace ttt
 				if (tempboard[i][j] == 0) {
 					tempboard[i][j] = -1;
 
-					coords = tempboard.defendArray(board.height(), board.width(), board.winCondition());
+					coords = tempboard.defendArray();
 					if (coords.x != -1)
 					{
-						coords = tempboard.defendArray(board.height(), board.width(), board.winCondition(), coords);
+						coords = tempboard.defendArray(coords);
 						if (coords.x != -1)
 						{
 							return { i,j };
@@ -120,7 +120,7 @@ namespace ttt
 			{
 				int lowestDepth = std::numeric_limits<int>::max();
 				int totalMarks = 0;
-				IntMatrix smallTempboard(board.winCondition());
+				IntMatrix smallTempboard(board.winCondition(), board.winCondition());
 				
 				for (int offsetX = 0; offsetX <= (board.height() - board.winCondition()); offsetX++)
 				{

@@ -16,24 +16,26 @@ namespace ttt
 	{
 	public:
 		IntMatrix(Board const& original, std::string const& name);
-		IntMatrix(int size);
-		IntMatrix(int height, int width);
+		IntMatrix(int size, unsigned int wincon);
+		IntMatrix(int height, int width, unsigned int wincon);
 
 		//no paramless constructor
 		IntMatrix() = delete;
 
 		IntMatrix(IntMatrix& other);
-
-		bool willWin(int currentplayer, int width, int height, int wincon);
-		NextMove evaluateBoard(int wincon, int maxDepth, int depth = 0, Coordinates const lastMove = { -1,-1 });
-		Coordinates finishOffArray(int const height, int const width, int const winCondition, Coordinates const& excpt = { -1,-1 });
-		Coordinates defendArray(int const height, int const width, int const winCondition, Coordinates const& excpt = { -1,-1 });
+		
+		bool willWin(int currentplayer);
+		NextMove evaluateBoard(int maxDepth, int depth = 0, Coordinates const lastMove = { -1,-1 });
+		Coordinates finishOffArray(Coordinates const& excpt = { -1,-1 });
+		Coordinates defendArray(Coordinates const& excpt = { -1,-1 });
 
 		std::vector<int>& operator[](int i);
 		~IntMatrix();
 
 	private:
-
+		unsigned int mWinCon;
+		unsigned int mWidth;
+		unsigned int mHeight;
 		std::vector<std::vector<int>> mBoard;
 
 	};
