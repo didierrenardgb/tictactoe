@@ -1,1 +1,7 @@
 build
+
+launch.json
+c_cpp_properties.json
+settings.json
+tasks.json
+cv140.pdb

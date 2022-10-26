@@ -9,24 +9,21 @@ static std::unique_ptr<Tile> sNullTile = nullptr;
 
 struct Board::Impl
 {
-	Impl(int width, int height, int winCondition): //Estas son las variables de la clase Board. Se encuentran encapsuladas en la estructura.  Se acceden con el puntero mImp. 
-		mWinCondition(winCondition) 
+	Impl(int width, int height, int winCondition):
+		mWinCondition(winCondition)
 	{
 		initialize(width, height);
-	} //inicializacion de las variables.
+	}
 
-
-
-
-	Impl(Impl const& other): //recibe como parametro una Impl.
-		mWinCondition(other.mWinCondition) 
+	Impl(Impl const& other):
+		mWinCondition(other.mWinCondition)
 	{
 		initialize(static_cast<int>(other.mTiles.size()), static_cast<int>(other.mTiles[0].size()));
 	}
 
 	void initialize(int width, int height)
 	{
-		if (width >= 3 && height >= 3) //Si hay suficiente celdas para jugar un ta-te-ti.
+		if (width >= 3 && height >= 3)
 		{
 			mTiles.reserve(width);
 			for (int i = 0; i < width; i++)

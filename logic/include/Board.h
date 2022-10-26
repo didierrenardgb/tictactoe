@@ -13,7 +13,7 @@ struct Coordinates;
 class Board
 {
 public:
-	Board(int width =3, int height =3, int winCondition =3);             //Dimentions.
+	Board(int width = 3, int height = 3, int winCondition = 3);
 	Board(Board const& other);
 	~Board();
 
@@ -28,7 +28,7 @@ public:
 	bool empty() const;
 
 private:
-	struct Impl; //foward declaration of struct Impl.
+	struct Impl;
 	std::unique_ptr<Impl> mImpl;
 };
 
