@@ -1,4 +1,5 @@
 #include "PlayerFranL.h"
+#include "EnumPlayerFranLVals.h"
 
 #include "Board.h"
 #include "Coordinates.h"
@@ -8,9 +9,11 @@
 #include <set>
 #include <limits>
 
+
+
 namespace ttt
 {
-
+	
 	//Constructor
 	PlayerFranL::PlayerFranL(std::string const& name, int maxLen, int minMarks, int maxDepth) :
 		mName(name), mMaxLen(maxLen), mMinMarks(minMarks), mMaxDepth(maxDepth)
@@ -25,91 +28,96 @@ namespace ttt
 	//Take a board from the competition, make a simplified copy to analyze. If there's a winning move, returns its coordinates. 
 	//If no such move exists, returns {-1,-1} instead
 	//Optionally accepts a Coordinate to ignore (important for fork detection)
-	Coordinates PlayerFranL::finishOff(Board const& board, Coordinates const& excpt) const{
-		IntMatrix testboard(board,mName);
+	static Coordinates finishOff(Board const& board, std::string const& name, Coordinates const& except = { INVALID, INVALID })
+	{
+		IntMatrix testboard(board, name);
 		
-		Coordinates coords= testboard.finishOffArray(excpt);
+		Coordinates coords= testboard.finishOffArray(except);
 		return coords;
 	}
 
 	//Take a board from the competition, make a simplified copy to analyze. If there's a move  that results in victory for the opponent, returns its coordinates.
 	//If no such move exists, returns {-1,-1} instead
 	//Optionally accepts a Coordinate to ignore (important for fork detection)
-	Coordinates PlayerFranL::defend(Board const& board, Coordinates const& excpt) const{
-		IntMatrix testboard(board, mName);
-		Coordinates coords= testboard.defendArray(excpt);
+	static Coordinates defend(Board const& board, std::string const& name, Coordinates const& except = {INVALID , INVALID})
+	{
+		IntMatrix testboard(board, name);
+		Coordinates coords= testboard.defendArray(except);
 		return coords;
 	}
 
 
 	//Take a board from the competition, make a simplified copy to analyze.
 	//If there's a move that is guaranteed to win next turn, returns its coordinates.
-	//If no such move exists, returns {-1,-1} instead
-	Coordinates PlayerFranL::fork(Board const& board) const{
-		IntMatrix tempboard(board, mName);
+	//If no such move exists, returns {INVALID, INVALID} ({-1,-1}) instead
+	static Coordinates fork(Board const& board, std::string const& name)
+	{
+		IntMatrix tempboard(board, name);
 		Coordinates coords;
 		for (int i = 0; i < board.height(); i++)
 		{
 			for (int j = 0; j < board.width(); j++)
 			{
-				if (tempboard[i][j] == 0) {
-					tempboard[i][j] = 1;
+				if (tempboard[i][j] == EMPTY) {
+					tempboard[i][j] = PLAYER;
 
 					coords = tempboard.finishOffArray();
-					if (coords.x != -1)
+					if (coords.x != INVALID)
 					{
 						coords = tempboard.finishOffArray(coords);
-						if (coords.x != -1)
+						if (coords.x != INVALID)
 						{
 							return { i,j };
 						}
 					}
 					
-					tempboard[i][j] = 0;
+					tempboard[i][j] = EMPTY;
 
 				}
 			}
 		}
-		return { -1,-1 };
+		return { INVALID, INVALID };
 	}
 
 	//Take a board from the competition, make a simplified copy to analyze.
 	//If there's a move that if taken by the opponent guarantees an opponent victory next turn, returns its coordinates.
-	//If no such move exists, returns {-1,-1} instead
-	Coordinates PlayerFranL::deFork(Board const& board) const{
-		IntMatrix tempboard(board, mName);
+	//If no such move exists, returns {INVALID, INVALID} ({-1,-1}) instead
+	static Coordinates deFork(Board const& board, std::string const& name)
+	{
+		IntMatrix tempboard(board, name);
 		Coordinates coords;
 		for (int i = 0; i < board.height(); i++)
 		{
 			for (int j = 0; j < board.width(); j++)
 			{
-				if (tempboard[i][j] == 0) {
-					tempboard[i][j] = -1;
+				if (tempboard[i][j] == EMPTY) {
+					tempboard[i][j] = OPPONENT;
 
 					coords = tempboard.defendArray();
-					if (coords.x != -1)
+					if (coords.x != INVALID)
 					{
 						coords = tempboard.defendArray(coords);
-						if (coords.x != -1)
+						if (coords.x != INVALID)
 						{
 							return { i,j };
 						}
 					}
 
-					tempboard[i][j] = 0;
+					tempboard[i][j] = EMPTY;
 
 				}
 			}
 		}
-		return { -1,-1 };
+		return { INVALID, INVALID };
 	}
 
 	//Strategizes next move via a recursive function when Rules based system does not find a winning move for the current and next turn. 
-	Coordinates PlayerFranL::strategize(Board const& board) const {
+	Coordinates PlayerFranL::strategize(Board const& board) const
+	{
 		if (board.valid())
 		{
 			IntMatrix tempboard(board, mName);
-			Coordinates coords={-1,-1};
+			Coordinates coords={INVALID,INVALID};
 			
 
 			bool availableTheaters = false;
@@ -148,7 +156,7 @@ namespace ttt
 							if (solution.depth < lowestDepth)
 							{
 								lowestDepth = solution.depth;
-								coords.x = solution.coords.x+offsetX;
+								coords.x = solution.coords.x + offsetX;
 								coords.y = solution.coords.y + offsetY;
 							}
 						}
@@ -159,9 +167,9 @@ namespace ttt
 
 			}
 
-			//Generate random valid coordinate if there are no available theaters
+			//Generate random valid coordinate if there are no available theaters or if recursion stopped due to depth or a clogged board
 			//a theater is a wincon x wincon sized subboard with at least mMin_marks pieces.
-			if (!availableTheaters)
+			if (!availableTheaters || coords.x == -1)
 			{
 				coords = { std::rand() % board.width(), std::rand() % board.height() };
 				while ((board.tile(coords) == nullptr) || board.tile(coords)->owner().has_value())
@@ -171,15 +179,7 @@ namespace ttt
 
 
 			}
-			//Final Sanity Check, if recursion stopped due to depth or a clogged board, return a random valid move
-			if (coords.x == -1)
-			{
-				coords = { std::rand() % board.width(), std::rand() % board.height() };
-				while ((board.tile(coords) == nullptr) || board.tile(coords)->owner().has_value())
-				{
-					coords = { std::rand() % board.width(), std::rand() % board.height() };
-				}
-			}
+			
 			return coords;
 		}
 
@@ -193,20 +193,20 @@ namespace ttt
 		{
 			
 			//Tactics Layer
-			Coordinates coords = finishOff(board);
-			if (coords.x != (-1))
+			Coordinates coords = finishOff(board, mName);
+			if (coords.x != (INVALID))
 				return { coords.y,coords.x };
 
-			coords = defend(board);
-			if (coords.x != (-1))
+			coords = defend(board, mName);
+			if (coords.x != (INVALID))
 				return { coords.y,coords.x };
 
-			coords = fork(board);
-			if (coords.x != (-1))
+			coords = fork(board, mName);
+			if (coords.x != (INVALID))
 				return { coords.y,coords.x };
 
-			coords = deFork(board);
-			if (coords.x != (-1))
+			coords = deFork(board, mName);
+			if (coords.x != (INVALID))
 				return { coords.y,coords.x };
 
 			//Strategic Layer, more costly

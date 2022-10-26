@@ -4,12 +4,16 @@
 #include "Board.h"
 #include "Tile.h"
 #include "Coordinates.h"
+#include "EnumPlayerFranLVals.h"
 
 namespace ttt
 {
-	struct NextMove {
-		int depth = -1;
-		Coordinates coords = { -1,-1 };
+	
+
+	struct NextMove 
+	{
+		int depth = INVALID;
+		Coordinates coords = { INVALID , INVALID };
 	};
 
 	class IntMatrix
@@ -22,15 +26,20 @@ namespace ttt
 		//no paramless constructor
 		IntMatrix() = delete;
 
-		IntMatrix(IntMatrix& other);
+		~IntMatrix() = default;
+
+		IntMatrix(IntMatrix const& other);
 		
-		bool willWin(int currentplayer);
-		NextMove evaluateBoard(int maxDepth, int depth = 0, Coordinates const lastMove = { -1,-1 });
-		Coordinates finishOffArray(Coordinates const& excpt = { -1,-1 });
-		Coordinates defendArray(Coordinates const& excpt = { -1,-1 });
+		bool willWin(int currentplayer) const;
+		NextMove evaluateBoard(int maxDepth, int depth = 0 );
+		NextMove evaluateBoardRecursive(int maxDepth, int depth, Coordinates const& lastMove = { INVALID, INVALID });
+		NextMove scanNextMove(int maxDepth, int depth, int lowestDepth, int player);
+		Coordinates finishOffArray(Coordinates const& excpt = { INVALID , INVALID });
+		Coordinates defendArray(Coordinates const& excpt = { INVALID, INVALID });
 
 		std::vector<int>& operator[](int i);
-		~IntMatrix();
+		const std::vector<int>& operator[](int i) const;
+
 
 	private:
 		unsigned int mWinCon;

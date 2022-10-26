@@ -1,7 +1,10 @@
 #include "IntMatrix.h"
 #include <string>
+
 namespace ttt
+
 {
+	
 	//Constructor by creating a simplified copy of the board, passing from the object to a 2d array of 0s (free spaces),
 	//-1s (controlled by an opponent) and 1s (controlled by the player)
 	IntMatrix::IntMatrix(Board const& original, std::string const& name)
@@ -17,17 +20,18 @@ namespace ttt
 			{
 				if (original.tile({ j,i })->owner().has_value())
 				{
-					if (original.tile({ j,i })->owner().value().get().name() == name) {
-						mBoard[i][j] = 1;
+					if (original.tile({ j,i })->owner().value().get().name() == name) 
+					{
+						mBoard[i][j] = PLAYER;
 					}
 					else
 					{
-						mBoard[i][j] = -1;
+						mBoard[i][j] = OPPONENT;
 					}
 				}
 				else
 				{
-					mBoard[i][j] = 0;
+					mBoard[i][j] = EMPTY;
 				}
 			}
 		}
@@ -42,7 +46,7 @@ namespace ttt
 		mBoard = std::vector<std::vector<int>>(height);
 		for (int i = 0; i < height; i++)
 		{
-			mBoard[i] = std::vector<int>(width, 0);
+			mBoard[i] = std::vector<int>(width, EMPTY);
 		}
 	}
 	//default initializer for all 0s of a square intmatrix
@@ -51,7 +55,7 @@ namespace ttt
 	}
 
 	//copy constructor
-	IntMatrix::IntMatrix(IntMatrix& other)
+	IntMatrix::IntMatrix(IntMatrix const& other)
 	{
 		mHeight = other.mHeight;
 		mWidth = other.mWidth;
@@ -69,20 +73,16 @@ namespace ttt
 		}
 	}
 
-	
-
-	//Destructor for IntMatrix
-	IntMatrix::~IntMatrix()
-	{
-		mBoard.clear();
-	}
 	//access line layer
 	std::vector<int>& IntMatrix::operator[](int i) {
 		return mBoard[i];
 	}
+	const std::vector<int>&  IntMatrix::operator[](int i) const{
+		return mBoard[i];
+	}
 
 	//Check if player currentplayer will win in the current boardstate, returns true if currentplayer has won in board, false otherwise.
-	bool IntMatrix::willWin(int currentplayer) {
+	bool IntMatrix::willWin(int currentplayer) const {
 
 		for (int x = 0; x < mHeight; x++)
 		{
@@ -127,54 +127,29 @@ namespace ttt
 		return false;
 	}
 
-
-	//Recursive funcion that scans a winning move from a wincon x wincon sized board
-	NextMove IntMatrix::evaluateBoard(int maxDepth, int depth, Coordinates const lastMove) {
-		Coordinates coords = lastMove;
+	NextMove IntMatrix::evaluateBoard(int maxDepth, int depth)
+	{
+		Coordinates coords;
 		int lowestDepth = std::numeric_limits<int>::max();
-		//If no valid move was found after maxDepth searches, return a random valid move
-		if (depth > maxDepth)
-		{
 
 			for (int i = 0; i < mWinCon; i++)
 			{
+
+				for (int j = 0; j < mWinCon; j++)
 				{
-					for (int j = 0; j < mWinCon; j++)
+					if (mBoard[i][j] == EMPTY)
 					{
-						if (mBoard[i][j] == 0)
+						mBoard[i][j] = PLAYER;
+						NextMove boardevaluation = evaluateBoardRecursive(maxDepth, depth + 1, { i,j });
+						if (boardevaluation.depth < lowestDepth)
 						{
-							return { std::numeric_limits<int>::max(), { i,j } };
+							coords = boardevaluation.coords;
+							lowestDepth = boardevaluation.depth;
 						}
+						mBoard[i][j] = EMPTY;
 					}
 				}
 
-			}
-
-			//Final sanity check in case of a clogged board with no valid moves
-			return { std::numeric_limits<int>::max(), { -1,-1 } };
-
-
-		}
-		if (lastMove.x == -1)
-		{
-			for (int i = 0; i < mWinCon; i++)
-			{
-				{
-					for (int j = 0; j < mWinCon; j++)
-					{
-						if (mBoard[i][j] == 0)
-						{
-							mBoard[i][j] = 1;
-							NextMove boardevaluation = evaluateBoard(maxDepth, depth + 1, { i,j });
-							if (boardevaluation.depth < lowestDepth)
-							{
-								coords = boardevaluation.coords;
-								lowestDepth = boardevaluation.depth;
-							}
-							mBoard[i][j] = 0;
-						}
-					}
-				}
 
 			}
 			//If no ending move was found after recursion, return a valid move as a sanity check.
@@ -182,57 +157,69 @@ namespace ttt
 			{
 				for (int i = 0; i < mWinCon; i++)
 				{
+					for (int j = 0; j < mWinCon; j++)
 					{
-						for (int j = 0; j < mWinCon; j++)
+						if (mBoard[i][j] == EMPTY)
 						{
-							if (mBoard[i][j] == 0)
-							{
-								return { std::numeric_limits<int>::max(),{ i,j } };
-							}
+							return { std::numeric_limits<int>::max(),{ i,j } };
 						}
 					}
 
 				}
 			}
 
-		}
-		else
+			return { lowestDepth,coords };
+
+
+		
+
+	}
+
+
+	//Recursive funcion that scans a winning move from a wincon x wincon sized board
+	NextMove IntMatrix::evaluateBoardRecursive(int maxDepth, int depth, Coordinates const& lastMove)
+	{
+		Coordinates coords = lastMove;
+		int lowestDepth = std::numeric_limits<int>::max();
+		//If no valid move was found after maxDepth searches, return a random valid move
+		if (depth > maxDepth)
 		{
+			for (int i = 0; i < mWinCon; i++)
+			{
+					for (int j = 0; j < mWinCon; j++)
+					{
+						if (mBoard[i][j] == EMPTY)
+						{
+							return { std::numeric_limits<int>::max(), { i,j } };
+						}
+					}
+			}
+
+			//Final sanity check in case of a clogged board with no valid moves
+			return { std::numeric_limits<int>::max(), { INVALID,INVALID } };
+
+		}
+		
 			if (depth % 2 == 0)
 			{
-				if (willWin(1))
+				if (willWin(PLAYER))
 				{
 					coords = lastMove;
 					lowestDepth = depth;
 				}
 				else
 				{
-					for (int i = 0; i < mWinCon; i++)
+					NextMove boardevaluation = scanNextMove(maxDepth, depth, lowestDepth, PLAYER);
+					if (boardevaluation.depth < lowestDepth)
 					{
-						{
-							for (int j = 0; j < mWinCon; j++)
-							{
-								if (mBoard[i][j] == 0)
-								{
-									mBoard[i][j] = 1;
-									NextMove boardevaluation = evaluateBoard(maxDepth, depth + 1, { i,j });
-									if (boardevaluation.depth < lowestDepth)
-									{
-										coords = boardevaluation.coords;
-										lowestDepth = boardevaluation.depth;
-									}
-									mBoard[i][j] = 0;
-								}
-							}
-						}
-
+						coords = boardevaluation.coords;
+						lowestDepth = boardevaluation.depth;
 					}
-
 				}
 			}
 			else
 			{
-				if (willWin(-1))
+				if (willWin(OPPONENT))
 				{
 					lowestDepth = std::numeric_limits<int>::max() - depth;
 					coords = lastMove;
@@ -240,82 +227,97 @@ namespace ttt
 				else
 				{
 					lowestDepth = 0;
-					for (int i = 0; i < mWinCon; i++)
+					NextMove boardevaluation= scanNextMove(maxDepth, depth, lowestDepth, PLAYER);
+					if (boardevaluation.depth > lowestDepth)
 					{
-						{
-							for (int j = 0; j < mWinCon; j++)
-							{
-								if (mBoard[i][j] == 0)
-								{
-									mBoard[i][j] = -1;
-									NextMove boardevaluation = evaluateBoard(maxDepth, depth + 1, { i,j });
-									if (boardevaluation.depth > lowestDepth)
-									{
-										coords = boardevaluation.coords;
-										lowestDepth = boardevaluation.depth;
-									}
-									mBoard[i][j] = 0;
-								}
-							}
-						}
-
+									coords = boardevaluation.coords;
+									lowestDepth = boardevaluation.depth;
 					}
+					
 				}
 
 			}
-		}
+		
 		return { lowestDepth,coords };
 	}
+
+	//part of recursive function
+	NextMove IntMatrix::scanNextMove(int maxDepth, int depth, int lowestDepth, int player)
+	{
+		NextMove returnVal{depth,{INVALID,INVALID}};
+		for (int i = 0; i < mWinCon; i++)
+		{
+
+			for (int j = 0; j < mWinCon; j++)
+			{
+				if (mBoard[i][j] == EMPTY)
+				{
+					mBoard[i][j] = player;
+					NextMove boardevaluation = evaluateBoardRecursive(maxDepth, depth + 1, { i,j });
+					if ((player==PLAYER && boardevaluation.depth < lowestDepth) || (player==OPPONENT && boardevaluation.depth>lowestDepth))
+					{
+						returnVal = boardevaluation;
+					}
+					mBoard[i][j] = EMPTY;
+				}
+			}
+
+
+		}
+		return returnVal;
+
+	}
+
 	//Scan the array of -1s, 0s and 1s, if there is a winning move, returns its coordinates
-	//If no such move exists, returns {-1,-1} instead
+	//If no such move exists, returns {INVALID,INVALID} ({-1,-1}) instead
 	//Optionally accepts a Coordinate to ignore (important for fork detection)
-	Coordinates IntMatrix::finishOffArray(Coordinates const& excpt) {
+	Coordinates IntMatrix::finishOffArray(Coordinates const& except) {
 		for (int i = 0; i < mHeight; i++)
 		{
 			for (int j = 0; j < mWidth; j++)
 			{
-				if (i != excpt.x && j != excpt.y)
+				if (i != except.x && j != except.y)
 				{
 
-					if (mBoard[i][j] == 0) {
-						mBoard[i][j] = 1;
-						if (willWin(1))
+					if (mBoard[i][j] == EMPTY) {
+						mBoard[i][j] = PLAYER;
+						if (willWin(PLAYER))
 						{
 							return { i,j };
 						}
-						mBoard[i][j] = 0;
+						mBoard[i][j] = EMPTY;
 
 					}
 				}
 			}
 		}
-		return { -1,-1 };
+		return { INVALID,INVALID };
 	}
 
 	//Scan the array of -1s, 0s and 1s, if there is a winning move for the opponent, returns its coordinates
-//If no such move exists, returns {-1,-1} instead
+//If no such move exists, returns {INVALID, INVALID} ({-1,-1}) instead
 //Optionally accepts a Coordinate to ignore (important for fork detection)
-	Coordinates IntMatrix::defendArray(Coordinates const& excpt) {
+	Coordinates IntMatrix::defendArray(Coordinates const& except) {
 		for (int i = 0; i < mHeight; i++)
 		{
 			for (int j = 0; j < mWidth; j++)
 			{
-				if (i != excpt.x && j != excpt.y)
+				if (i != except.x && j != except.y)
 				{
 
-					if (mBoard[i][j] == 0) {
-						mBoard[i][j] = -1;
-						if (willWin(-1))
+					if (mBoard[i][j] == EMPTY) {
+						mBoard[i][j] = OPPONENT;
+						if (willWin(OPPONENT))
 						{
 							return { i,j };
 						}
-						mBoard[i][j] = 0;
+						mBoard[i][j] = EMPTY;
 
 					}
 				}
 			}
 		}
-		return { -1,-1 };
+		return { INVALID,INVALID };
 	}
 
 

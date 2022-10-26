@@ -29,10 +29,6 @@ namespace ttt
 		//Maximum recursive depth to be analyzed. If the recursive strategy goes deeper it will instantly return a random valid move in the theater, instead.
 		int mMaxDepth;
 
-		Coordinates finishOff(Board const& board, Coordinates const& excpt={-1,-1}) const;
-		Coordinates defend(Board const& board, Coordinates const& excpt = { -1,-1 }) const;
-		Coordinates fork(Board const& board) const;
-		Coordinates deFork(Board const& board) const;
 		Coordinates strategize(Board const& board) const;
 
 
