@@ -1,7 +1,12 @@
 build
 
-launch.json
-c_cpp_properties.json
-settings.json
-tasks.json
-cv140.pdb
+ 
+.vscode/launch.json
+ 
+.vscode/c_cpp_properties.json
+ 
+.vscode/settings.json
+ 
+.vscode/tasks.json
+
+app/source/vc140.pdb
