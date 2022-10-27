@@ -17,7 +17,7 @@ enum HeuristicValues //Heuristic values of each posible state.
 
 namespace ttt
 {
-	static const int DEPTH_VALUE = 9; //The value of depth that will be use in our algorithm.
+	static const int DEPTH_VALUE = 5; //The value of depth that will be use in our algorithm.
 
 /*The semantics of the values ​​to obtain:
 	If the game isn't over, it will return the depth value. Bigger the value, bigger the odds to find a victory path.
@@ -32,13 +32,13 @@ namespace ttt
 		int heuristicValue;
 		switch (gameOverStatus)
 		{
-			case GameOverStateValues::currentPlayerWins:
+			case GameStatesValues::currentPlayerWins:
 				heuristicValue =(HeuristicValues::win + depth)  - (DEPTH_VALUE - depth); 
 			break;
-			case GameOverStateValues::currentPlayerDefeated:
+			case GameStatesValues::currentPlayerDefeated:
 				heuristicValue =(HeuristicValues::defeat - depth) + (DEPTH_VALUE - depth);
 			break;
-			case GameOverStateValues::playersTie:
+			case GameStatesValues::playersTie:
 				heuristicValue = HeuristicValues::tie;
 			break;
 			default:	

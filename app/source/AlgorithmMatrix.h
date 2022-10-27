@@ -13,7 +13,7 @@ enum TokenValues //The token values that the board will use.
 	rivalToken
 };
 
-enum  GameOverStateValues //The semantics value of all the possible game states that we can have.
+enum  GameStatesValues //The semantics value of all the possible game states that we can have.
 {
 	theGameIsNotOverYet=0,
 	currentPlayerWins,
@@ -39,7 +39,7 @@ namespace ttt
         int mWidth;
         int mHeight;
         int mWinCondition;
-        void foundAWin(int &token, int &i, int &j, int & iCapturated, int & jCapturated, int&AmountOfEqualToken, bool& moveToNextWinControl);
+        void checkVictory(int &token, int &i, int &j, int & iCapturated, int & jCapturated, int&AmountOfEqualToken, bool& moveToNextWinControl);
         std::vector<std::vector<int>> initializeAlphaBeta(Board const& board, std::string const& name);
     };
 
