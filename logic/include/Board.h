@@ -13,7 +13,7 @@ struct Coordinates;
 class Board
 {
 public:
-	Board(int width = 4, int height = 4, int winCondition = 4);
+	Board(int width = 3, int height = 3, int winCondition = 3);
 	Board(Board const& other);
 	~Board();
 
@@ -33,3 +33,4 @@ private:
 };
 
 } // namespace ttt
+
