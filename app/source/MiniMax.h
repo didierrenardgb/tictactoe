@@ -25,7 +25,8 @@
 
 #pragma once
 
-#include "IPlayer.h"
+#include "Board.h"
+#include <string>
 #include <vector>
 
 namespace ttt
@@ -35,15 +36,16 @@ namespace ttt
 class MiniMax
 {
 public:
-    MiniMax(Board const& board, std::string player);
+    MiniMax(Board const& board, std::string const& player);
     Coordinates play();
     void printBoard();
 
 private:
     //Methods
     void copyBoard(Board const& board);
-    int searchPlay(int const& row, int const& column, int depth, bool isMaximizer);
-    const int evaluate(int const& row, int const& column); //Heuristic function.
+    int checkWincon(int row, int column, int rowIncrement, int colIncrement);
+    int evaluate(int row, int column); //Heuristic function.
+    int searchPlay(int row, int column, int depth, bool isMaximizer);
 
     //Attributes
     std::string mPlayer;
@@ -51,6 +53,7 @@ private:
     int mMaxR;
     int mMaxC;
     bool mIsEmpty;
+    int mWinCondition;
 
 };
 

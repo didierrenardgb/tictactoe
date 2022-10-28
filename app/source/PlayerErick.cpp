@@ -36,10 +36,7 @@ static Coordinates play(Board const& board, std::string const& player)
 {
 	if (board.valid())
 	{
-		MiniMax minimaxObj(board, player);
-		//Debugging
-		minimaxObj.printBoard();
-		
+		MiniMax minimaxObj(board, player);		
 		return minimaxObj.play();
 	}
 
