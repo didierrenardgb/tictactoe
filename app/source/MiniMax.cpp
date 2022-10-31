@@ -44,7 +44,6 @@ enum Points : int
 {
     win = 50,
     lose = -50,
-    preventVictory = 7,
     center = 11,
     nextTo = 1
 };

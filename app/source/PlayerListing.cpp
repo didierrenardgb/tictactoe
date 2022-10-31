@@ -18,7 +18,7 @@ void setupPlayers(std::unique_ptr<Competition> &forCompetition)
 
 	forCompetition->addPlayer(std::make_unique<ttt::PlayerFranL>("[FRANLBOT] Frederik Franlebowitz"));
 	forCompetition->addPlayer(std::make_unique<ttt::PlayerFede>("[BOT] Fede"));
-  forCompetition->addPlayer(std::make_unique<ttt::PlayerErick>());
+  	forCompetition->addPlayer(std::make_unique<ttt::PlayerErick>());
 }
 
 } // namespace
