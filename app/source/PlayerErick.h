@@ -33,12 +33,12 @@ namespace ttt
 class PlayerErick : public IPlayer
 {
 public:
-	PlayerErick();
-	std::string const &name() const override;
-	Coordinates play(Board const &board) const override;
+    PlayerErick();
+    std::string const &name() const override;
+    Coordinates play(Board const &board) const override;
 
 private:
-	std::string mName;
+    std::string mName;
 };
 
 } // namespace ttt
