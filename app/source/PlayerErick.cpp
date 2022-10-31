@@ -1,27 +1,27 @@
 /***************************************************************
-*                          $$$$$$$                             *
-*                      $$$$$$$$$$$$$$                          *
-*                   $$$$$$$$$$$$$$$$$$                         *
-*                  $$$$$$$$$$$$$$$$$$$$                        *
-*                 $$$$$$$$$$$$$$$O$$$$$    $$$$$$              *
-*                 $$$$$$$$O$$$$$$$$$$$$   $$$  $$$             *
-*                 $$$$$$$$$$$$$$$$$$$$  $$$$    $$             *
-*                  $$$$$$$$$$$$$$$$$$$$$$$$                    *
-*                   $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$             *
-*           $$$$$$     $$$$$$$$$$$$$$$$$$        $$            *
-*          $$   $$$$$$$$$$$$$$$$$$$$$$$         $$             *
-*           $$$    $$$$$$$$$$$$$$$$$$$$$$$$$$$$                *
-*               $$$$$$$$  $$$ $$$$$$          $$               *
-*             $$$$       $$$  $$$ $$$      $$$$                *
-*            $$$       $$$$   $$$  $$$                         *
-*             $$$$$   $$$     $$$   $$$$    $$                 *
-*              $$$    $$$$$$  $$$    $$$$$$$$                  *
-*                      $$$     $$$$$   $$$$                    *
-*                                                              *
-*                      Erick Andersson                         *
-*                erick.andersson98@gmail.com                   *
-*                                                              *
-****************************************************************/
+ *                          $$$$$$$                             *
+ *                      $$$$$$$$$$$$$$                          *
+ *                   $$$$$$$$$$$$$$$$$$                         *
+ *                  $$$$$$$$$$$$$$$$$$$$                        *
+ *                 $$$$$$$$$$$$$$$O$$$$$    $$$$$$              *
+ *                 $$$$$$$$O$$$$$$$$$$$$   $$$  $$$             *
+ *                 $$$$$$$$$$$$$$$$$$$$  $$$$    $$             *
+ *                  $$$$$$$$$$$$$$$$$$$$$$$$                    *
+ *                   $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$             *
+ *           $$$$$$     $$$$$$$$$$$$$$$$$$        $$            *
+ *          $$   $$$$$$$$$$$$$$$$$$$$$$$         $$             *
+ *           $$$    $$$$$$$$$$$$$$$$$$$$$$$$$$$$                *
+ *               $$$$$$$$  $$$ $$$$$$          $$               *
+ *             $$$$       $$$  $$$ $$$      $$$$                *
+ *            $$$       $$$$   $$$  $$$                         *
+ *             $$$$$   $$$     $$$   $$$$    $$                 *
+ *              $$$    $$$$$$  $$$    $$$$$$$$                  *
+ *                      $$$     $$$$$   $$$$                    *
+ *                                                              *
+ *                      Erick Andersson                         *
+ *                erick.andersson98@gmail.com                   *
+ *                                                              *
+ ****************************************************************/
 
 #include "PlayerErick.h"
 
@@ -32,30 +32,29 @@
 namespace ttt
 {
 
-static Coordinates play(Board const& board, std::string const& player)
+static Coordinates play(Board const &board, std::string const &player)
 {
-	if (board.valid())
-	{
-		MiniMax minimaxObj(board, player);		
-		return minimaxObj.play();
-	}
+    if (board.valid())
+    {
+        MiniMax minimaxObj(board, player);
+        return minimaxObj.play();
+    }
 
-	return { 0, 0 };
+    return {0, 0};
 }
 
-PlayerErick::PlayerErick():
-	mName("Erick")
+PlayerErick::PlayerErick() : mName("Erick")
 {
 }
 
-std::string const& PlayerErick::name() const
+std::string const &PlayerErick::name() const
 {
-	return mName;
+    return mName;
 }
 
-Coordinates PlayerErick::play(Board const& board) const
+Coordinates PlayerErick::play(Board const &board) const
 {
-	return ttt::play(board, name());
+    return ttt::play(board, name());
 }
 
 } // namespace ttt
