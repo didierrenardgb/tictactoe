@@ -3,34 +3,31 @@
 #include "Board.h"
 #include <string>
 
-
-
-
-enum TokenValues //The token values that the board will use.
+enum TokenValues // The token values that the board will use.
 {
-	emptyToken=0,
-	currentPlayerToken,
-	rivalToken
+    emptyToken = 0,
+    currentPlayerToken,
+    rivalToken
 };
 
-enum  GameStatesValues //The semantics value of all the possible game states that we can have.
+enum GameStatesValues // The semantics value of all the possible game states that we can have.
 {
-	theGameIsNotOverYet=0,
-	currentPlayerWins,
-	currentPlayerDefeated,
-	playersTie
+    theGameIsNotOverYet = 0,
+    currentPlayerWins,
+    currentPlayerDefeated,
+    playersTie
 };
 
 namespace ttt
 {
-    class AlgorithmMatrix 
+    class AlgorithmMatrix
     {
     public:
-        AlgorithmMatrix (Board const& board, std::string playerName);                         
+        AlgorithmMatrix(Board const &board, std::string playerName);
         int getWidth() const;
         int getHeight() const;
-        void executeMovement(Coordinates const& c, bool const& actualPlayer);
-        void undoMovement(Coordinates const& c);
+        void executeMovement(Coordinates const &c, bool const &actualPlayer);
+        void undoMovement(Coordinates const &c);
         std::vector<Coordinates> getMovs();
         int trivialGameOver();
 
@@ -39,8 +36,8 @@ namespace ttt
         int mWidth;
         int mHeight;
         int mWinCondition;
-        void checkVictory(int &token, int &i, int &j, int & iCapturated, int & jCapturated, int&AmountOfEqualToken, bool& moveToNextWinControl);
-        std::vector<std::vector<int>> initializeAlphaBeta(Board const& board, std::string const& name);
+        void checkVictory(int &token, int &i, int &j, int &iCapturated, int &jCapturated, int &AmountOfEqualToken, bool &moveToNextWinControl);
+        std::vector<std::vector<int>> initializeAlphaBeta(Board const &board, std::string const &name);
     };
 
 } // namespace ttt
