@@ -6,10 +6,8 @@
 namespace ttt
 {
     AlgorithmMatrix::AlgorithmMatrix(Board const &board, std::string const& playerName) // The constructor creates the semantic matrix that will be used in the Alpha Beta Algorithm.
+    : mWidth(board.width()) , mHeight(board.height()) , mWinCondition(board.winCondition())
     {
-        mWidth = board.width();
-        mHeight = board.height();
-        mWinCondition = board.winCondition();
         mMatrix.resize(mWidth, std::vector<int>(board.height()));
         for (int i = 0; i < mWidth; i++)
         {
