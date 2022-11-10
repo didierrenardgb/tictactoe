@@ -3,14 +3,14 @@
 #include "Board.h"
 #include <string>
 
-enum TokenValues // The token values that the board will use.
+enum class TokenValues // The token values that the board will use.
 {
     emptyToken = 0,
     currentPlayerToken,
     rivalToken
 };
 
-enum GameStatesValues // The semantics value of all the possible game states that we can have.
+enum class GameStatesValues // The semantics value of all the possible game states that we can have.
 {
     theGameIsNotOverYet = 0,
     currentPlayerWins,

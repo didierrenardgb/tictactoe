@@ -22,18 +22,18 @@ namespace ttt
             If the actual player losses, the function will return the value (-defeat-depth) plus the amount of levels of depth that we generated.
         If there is a tie, it will return the value asociated.*/
 
-    static int calculateValue(int const &gameOverStatus, bool const &isActualPlayer, int const &depth)
+    static int calculateValue(int const &gameOverStatus, bool isActualPlayer, int depth)
     {
         int heuristicValue;
         switch (gameOverStatus)
         {
-        case GameStatesValues::currentPlayerWins:
+        case (int) GameStatesValues::currentPlayerWins:
             heuristicValue = (HeuristicValues::win + depth) - (DEPTH_VALUE - depth);
             break;
-        case GameStatesValues::currentPlayerDefeated:
+        case (int) GameStatesValues::currentPlayerDefeated:
             heuristicValue = (HeuristicValues::defeat - depth) + (DEPTH_VALUE - depth);
             break;
-        case GameStatesValues::playersTie:
+        case (int) GameStatesValues::playersTie:
             heuristicValue = HeuristicValues::tie;
             break;
         default:

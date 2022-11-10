@@ -16,16 +16,16 @@ namespace ttt
             for (int j = 0; j < mHeight; j++)
             {
                 Coordinates c{i, j};
-                mMatrix[i][j] = TokenValues::emptyToken; // I Asume that the tile is empty.
+                mMatrix[i][j] = (int) TokenValues::emptyToken; // I Asume that the tile is empty.
                 if (board.tile(c)->owner().has_value())
                 {
                     if (playerName == board.tile(c)->owner()->get().name()) // Depending on the owner of our tile, the function will put the token asociated.
                     {
-                        mMatrix[i][j] = TokenValues::currentPlayerToken;
+                        mMatrix[i][j] = (int) TokenValues::currentPlayerToken;
                     }
                     else
                     {
-                        mMatrix[i][j] = TokenValues::rivalToken;
+                        mMatrix[i][j] = (int) TokenValues::rivalToken;
                     }
                 }
             }
@@ -44,12 +44,12 @@ namespace ttt
 
     void AlgorithmMatrix::executeMovement(Coordinates const &c, bool actualPlayer) // Function that execute a movement.
     {
-        mMatrix[c.x][c.y] = actualPlayer? TokenValues::currentPlayerToken : TokenValues::rivalToken;
+        mMatrix[c.x][c.y] = actualPlayer? (int) TokenValues::currentPlayerToken : (int) TokenValues::rivalToken;
     }
 
     void AlgorithmMatrix::undoMovement(Coordinates const &c) // Function that undo a movement.
     {
-        mMatrix[c.x][c.y] = TokenValues::emptyToken;
+        mMatrix[c.x][c.y] = (int) TokenValues::emptyToken;
     }
 
     std::vector<Coordinates> AlgorithmMatrix::getMovs() // We get all the posible moves to make in the board.
@@ -60,7 +60,7 @@ namespace ttt
         {
             for (int j = 0; j < mHeight; j++)
             {
-                if (mMatrix[i][j] == TokenValues::emptyToken)
+                if (mMatrix[i][j] == (int) TokenValues::emptyToken)
                 {
                     output.push_back(Coordinates{i, j});
                 }
@@ -75,13 +75,13 @@ namespace ttt
     {
         if (amountOfEqualToken == mWinCondition)
         {
-            if (mMatrix[i][j] == TokenValues::currentPlayerToken)
+            if (mMatrix[i][j] == (int) TokenValues::currentPlayerToken)
             {
-                actualGameState = GameStatesValues::currentPlayerWins;
+                actualGameState =(int)  GameStatesValues::currentPlayerWins;
             }
             else
             {
-                actualGameState = GameStatesValues::currentPlayerDefeated;
+                actualGameState = (int) GameStatesValues::currentPlayerDefeated;
             }
         }
         moveToNextWinControl = false;
@@ -94,7 +94,7 @@ namespace ttt
     {
         bool fullBoard = true; // We asume the Tie Game Over.
         bool moveToNextWinControl = false;
-        int actualGameState = GameStatesValues::theGameIsNotOverYet; // If the variable gets a value that is diferent of the partial state value, a victory has cocurred!
+        int actualGameState = (int) GameStatesValues::theGameIsNotOverYet; // If the variable gets a value that is different of the partial state value, a victory has cocurred!
         for (int i = 0; i < mWidth; i++)
         {
             for (int j = 0; j < mHeight; j++)
@@ -106,7 +106,7 @@ namespace ttt
                 {
                     while (!moveToNextWinControl && amountOfEqualToken < mWinCondition && i + 1 < mWidth)
                     {
-                        if (mMatrix[i][j] == mMatrix[i + 1][j] && mMatrix[i][j] != TokenValues::emptyToken)
+                        if (mMatrix[i][j] == mMatrix[i + 1][j] && mMatrix[i][j] != (int) TokenValues::emptyToken)
                         {
                             amountOfEqualToken++;
                             i++;
@@ -119,11 +119,11 @@ namespace ttt
                     checkVictory(actualGameState, i, j, iCapturated, jCapturated, amountOfEqualToken, moveToNextWinControl);
                 }
 
-                if (j + mWinCondition <= mHeight && actualGameState == GameStatesValues::theGameIsNotOverYet) // For now one,  we also ask that if there is no victory yet. Column check
+                if (j + mWinCondition <= mHeight && actualGameState == (int) GameStatesValues::theGameIsNotOverYet) // For now one,  we also ask that if there is no victory yet. Column check
                 {
                     while (!moveToNextWinControl && amountOfEqualToken < mWinCondition && j + 1 < mHeight)
                     {
-                        if (mMatrix[i][j] == mMatrix[i][j + 1] && mMatrix[i][j] != TokenValues::emptyToken)
+                        if (mMatrix[i][j] == mMatrix[i][j + 1] && mMatrix[i][j] != (int) TokenValues::emptyToken)
                         {
                             amountOfEqualToken++;
                             j++;
@@ -135,12 +135,12 @@ namespace ttt
                     }
                     checkVictory(actualGameState, i, j, iCapturated, jCapturated, amountOfEqualToken, moveToNextWinControl);
                 }
-                if (j + mWinCondition <= mHeight && i + mWinCondition <= mWidth && actualGameState == GameStatesValues::theGameIsNotOverYet) // We check the 2 possible diagonals wins.
+                if (j + mWinCondition <= mHeight && i + mWinCondition <= mWidth && actualGameState == (int) GameStatesValues::theGameIsNotOverYet) // We check the 2 possible diagonals wins.
                 {
                     j = j + mWinCondition - 1;
                     while (!moveToNextWinControl && amountOfEqualToken < mWinCondition && j > 0 && i + 1 < mWidth) // Increasing Diagonal {Q1  to  Q4.}
                     {
-                        if (mMatrix[i][j] == mMatrix[i + 1][j - 1] && mMatrix[i][j] != TokenValues::emptyToken)
+                        if (mMatrix[i][j] == mMatrix[i + 1][j - 1] && mMatrix[i][j] != (int)  TokenValues::emptyToken)
                         {
                             amountOfEqualToken++;
                             j--;
@@ -153,9 +153,9 @@ namespace ttt
                     }
                     checkVictory(actualGameState, i, j, iCapturated, jCapturated, amountOfEqualToken, moveToNextWinControl);
 
-                    while (!moveToNextWinControl && amountOfEqualToken < mWinCondition && j + 1 < mHeight && i + 1 < mWidth && actualGameState == GameStatesValues::theGameIsNotOverYet) // Decreasing Diagonal {Q2 to Q4}.
+                    while (!moveToNextWinControl && amountOfEqualToken < mWinCondition && j + 1 < mHeight && i + 1 < mWidth && actualGameState == (int) GameStatesValues::theGameIsNotOverYet) // Decreasing Diagonal {Q2 to Q4}.
                     {
-                        if (mMatrix[i][j] == mMatrix[i + 1][j + 1] && mMatrix[i][j] != TokenValues::emptyToken)
+                        if (mMatrix[i][j] == mMatrix[i + 1][j + 1] && mMatrix[i][j] != (int) TokenValues::emptyToken)
                         {
                             amountOfEqualToken++;
                             j++;
@@ -168,11 +168,11 @@ namespace ttt
                     }
                     checkVictory(actualGameState, i, j, iCapturated, jCapturated, amountOfEqualToken, moveToNextWinControl);
                 }
-                if ((mMatrix[i][j]) == TokenValues::emptyToken) // If we found at least one tile that isn't empty, then there is no tie yet!.
+                if ((mMatrix[i][j]) == (int) TokenValues::emptyToken) // If we found at least one tile that isn't empty, then there is no tie yet!.
                 {
                     fullBoard = false;
                 }
-                if (actualGameState != GameStatesValues::theGameIsNotOverYet) // We found a victory!
+                if (actualGameState != (int) GameStatesValues::theGameIsNotOverYet) // We found a victory!
                 {
                     return actualGameState;
                 }
@@ -180,9 +180,9 @@ namespace ttt
         }
         if (fullBoard)
         {
-            return GameStatesValues::playersTie; // In this case, we get a Tie Game Over.
+            return (int) GameStatesValues::playersTie; // In this case, we get a Tie Game Over.
         }
-        return GameStatesValues::theGameIsNotOverYet; // If there is, at least, one tile empty, the game will be not over yet.
+        return (int) GameStatesValues::theGameIsNotOverYet; // If there is, at least, one tile empty, the game will be not over yet.
     }
 
 } // namespace ttt
