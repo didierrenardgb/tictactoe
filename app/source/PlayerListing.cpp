@@ -5,10 +5,9 @@
 
 #include "PlayerFranL.h"
 #include "PlayerFede.h"
-#include "PlayerUnbeatable.h"
-#include "PlayerTor.h"
+//#include "PlayerUnbeatable.h"
+//#include "PlayerTor.h"
 #include "PlayerExe.h"
-
 
 namespace ttt
 {
@@ -16,7 +15,6 @@ namespace ttt
     {
 
         // Add new players below:
-
         forCompetition->addPlayer(std::make_unique<ttt::PlayerFranL>("[FRANLBOT] Frederik Franlebowitz"));
         forCompetition->addPlayer(std::make_unique<ttt::PlayerFede>("[BOT] Fede"));
         forCompetition->addPlayer(std::make_unique<ttt::PlayerExe>("[BOT] ExeA"));

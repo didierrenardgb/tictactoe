@@ -23,10 +23,10 @@ namespace ttt
     class AlgorithmMatrix
     {
     public:
-        AlgorithmMatrix(Board const &board, std::string playerName);
+        AlgorithmMatrix(Board const &board, std::string const&  playerName);
         int getWidth() const;
         int getHeight() const;
-        void executeMovement(Coordinates const &c, bool const &actualPlayer);
+        void executeMovement(Coordinates const &c, bool actualPlayer);
         void undoMovement(Coordinates const &c);
         std::vector<Coordinates> getMovs();
         int trivialGameOver();

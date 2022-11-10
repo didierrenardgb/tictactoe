@@ -5,7 +5,7 @@
 
 namespace ttt
 {
-    AlgorithmMatrix::AlgorithmMatrix(Board const &board, std::string playerName) // The constructor creates the semantic matrix that will be used in the Alpha Beta Algorithm.
+    AlgorithmMatrix::AlgorithmMatrix(Board const &board, std::string const& playerName) // The constructor creates the semantic matrix that will be used in the Alpha Beta Algorithm.
     {
         mWidth = board.width();
         mHeight = board.height();
@@ -42,16 +42,9 @@ namespace ttt
         return mHeight;
     }
 
-    void AlgorithmMatrix::executeMovement(Coordinates const &c, bool const &actualPlayer) // Function that execute a movement.
+    void AlgorithmMatrix::executeMovement(Coordinates const &c, bool actualPlayer) // Function that execute a movement.
     {
-        if (actualPlayer)
-        {
-            mMatrix[c.x][c.y] = TokenValues::currentPlayerToken;
-        }
-        else
-        {
-            mMatrix[c.x][c.y] = TokenValues::rivalToken;
-        }
+        mMatrix[c.x][c.y] = actualPlayer? TokenValues::currentPlayerToken : TokenValues::rivalToken;
     }
 
     void AlgorithmMatrix::undoMovement(Coordinates const &c) // Function that undo a movement.
@@ -189,10 +182,7 @@ namespace ttt
         {
             return GameStatesValues::playersTie; // In this case, we get a Tie Game Over.
         }
-        else
-        {
-            return GameStatesValues::theGameIsNotOverYet; // If there is, at least, one tile empty, the game will be not over yet.
-        }
+        return GameStatesValues::theGameIsNotOverYet; // If there is, at least, one tile empty, the game will be not over yet.
     }
 
 } // namespace ttt

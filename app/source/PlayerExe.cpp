@@ -17,9 +17,9 @@ namespace ttt
 
     /*The semantics of the values ​​to obtain:
         If the game isn't over, it will return the depth value. Bigger the value, bigger the odds to find a victory path.
-        We add to the win and defeat value the depth value, to ashure that iven the worst win will be always better that any partial state.
+        We add to the win and defeat value the depth value, to assure that i'ven the worst win will be always better that any partial state.
             If the actual player wins, the function will return the value (win+depth) minus the amount of levels of depth that we generated.
-            If the actual player looses, the function will return the value (-defeat-depth) plus the amount of levels of depth that we generated.
+            If the actual player losses, the function will return the value (-defeat-depth) plus the amount of levels of depth that we generated.
         If there is a tie, it will return the value asociated.*/
 
     static int calculateValue(int const &gameOverStatus, bool const &isActualPlayer, int const &depth)
@@ -100,7 +100,7 @@ namespace ttt
         }
     }
 
-    static Coordinates play(Board const &board, AlgorithmMatrix matrix) // Function that obtains the final move to make.
+    static Coordinates play(Board const &board, AlgorithmMatrix & matrix) // Function that obtains the final move to make.
     {
         Coordinates coords{0, 0};
         if (board.valid())
