@@ -2,6 +2,7 @@
 #include "Coordinates.h"
 #include "Tile.h"
 #include <vector>
+#include <iostream>
 
 namespace ttt
 {
@@ -88,6 +89,7 @@ namespace ttt
         j = jCapturated;
     }
 
+/*
     int AlgorithmMatrix::trivialGameOver() // Function that seeks a victory.
     {
         bool fullBoard = true; // We asume the Tie Game Over.
@@ -182,5 +184,118 @@ namespace ttt
         }
         return (int) GameStatesValues::theGameIsNotOverYet; // If there is, at least, one tile empty, the game will be not over yet.
     }
+
+  */ 
+
+bool AlgorithmMatrix::inRange(int i, int j , int iIncrement , int jIncrement)
+{
+    if (i+iIncrement < mWidth && j+jIncrement < mHeight)
+    {
+        if (jIncrement<0)
+        {
+            if (j>0 && j<mHeight)
+            {
+                return true;
+            }
+            return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+
+int  AlgorithmMatrix::checkAxisVictory(int i , int y, int iIncrement, int jIncrement, int actualGameState)
+{  
+    int amountOfEqualToken = 1;
+    bool moveToNextWinControl = false;
+    while (!moveToNextWinControl && amountOfEqualToken < mWinCondition && inRange(i,y,iIncrement,jIncrement))
+    {
+        if (mMatrix[i][y] == mMatrix[i + iIncrement] [y + jIncrement] && mMatrix[i][y] != (int) TokenValues::emptyToken)
+        {
+            amountOfEqualToken++;
+            i=i+iIncrement;
+            y=y+jIncrement;
+        }
+        else
+        {
+            moveToNextWinControl = true; // If this is true, then on this path there is no longer a possible victory. We must continue to the next control.
+        }
+    }
+    if (amountOfEqualToken == mWinCondition)
+        {
+            if (mMatrix[i][y] == (int) TokenValues::currentPlayerToken)
+            {
+                return actualGameState =(int)  GameStatesValues::currentPlayerWins;
+            }
+            else
+            {
+                return actualGameState = (int) GameStatesValues::currentPlayerDefeated;
+            }
+        }
+    return (int) GameStatesValues::theGameIsNotOverYet;
+}
+
+
+
+
+    int AlgorithmMatrix::trivialGameOver() // Function that seeks a victory.
+    {
+        bool fullBoard = true; // We asume the Tie Game Over.
+        bool moveToNextWinControl = false;
+        int actualGameState = (int) GameStatesValues::theGameIsNotOverYet; // If the variable gets a value that is different of the partial state value, a victory has cocurred!
+        for (int i = 0; i < mWidth; i++)
+        {
+
+        //j + 0 ; i + 1 Row (actual tile)
+        //j + 1 ; i + 0 Collumn (actual tile)
+        //j - 1 ; i + 1 Increasing Diagonal {Q1  to  Q4.} With initialization:   j = j + mWinCondition - 1;
+        //j + 1 ; i + 1 Decreasing Diagonal {Q2 to Q4} (Actual tile)
+
+            for (int j = 0; j < mHeight; j++)
+            {
+
+                actualGameState = checkAxisVictory(i , j , 1 , 0 , actualGameState);    //Row (actual tile)
+
+                if (actualGameState == (int) GameStatesValues::theGameIsNotOverYet)    //Collumn (actual tile)
+                {
+                    actualGameState = checkAxisVictory(i , j , 0 , 1 , actualGameState);
+                }
+
+                if (actualGameState == (int) GameStatesValues::theGameIsNotOverYet)    //Increasing Diagonal {Q1  to  Q4.}
+                {
+                    int indexCorrection = j + mWinCondition; indexCorrection--;
+                    actualGameState = checkAxisVictory(i , j + mWinCondition -1 , 1, -1 , actualGameState);
+                }
+
+                if (actualGameState== (int) GameStatesValues::theGameIsNotOverYet)     //Decreasing Diagonal {Q2 to Q4}
+                {
+                    actualGameState = checkAxisVictory(i , j , 1, 1 , actualGameState);
+                }
+
+                if ((mMatrix[i][j]) == (int) TokenValues::emptyToken) // If we found at least one tile that isn't empty, then there is no tie yet!.
+                {
+                    fullBoard = false;
+                }
+                if (actualGameState != (int) GameStatesValues::theGameIsNotOverYet) // We found a victory!
+                {
+                    return actualGameState;
+                }
+            }
+        }
+        if (fullBoard)
+        {
+            return (int) GameStatesValues::playersTie; // In this case, we get a Tie Game Over.
+        }
+        return (int) GameStatesValues::theGameIsNotOverYet; // If there is, at least, one tile empty, the game will be not over yet.
+    }
+
+
+
+
+
+
+
+
 
 } // namespace ttt

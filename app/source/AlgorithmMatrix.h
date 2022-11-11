@@ -37,7 +37,9 @@ namespace ttt
         int mHeight;
         int mWinCondition;
         void checkVictory(int &token, int &i, int &j, int &iCapturated, int &jCapturated, int &AmountOfEqualToken, bool &moveToNextWinControl);
+        int checkAxisVictory(int i , int y, int iIncrement, int jIncrement, int actualGameState);        
         std::vector<std::vector<int>> initializeAlphaBeta(Board const &board, std::string const &name);
+        bool inRange(int i, int j , int iIncrement , int jIncrement);
     };
 
 } // namespace ttt
