@@ -66,12 +66,12 @@ namespace ttt
                 {
                     if (!pruning)
                     {
-                        matrix.executeMovement(candidate, actualPlayer);                                   // we execute the movement.
-                        value = std::max(value, alphaBeta(depth - 1, alpha, beta, !actualPlayer, matrix)); // we search the maximun value for the current player.
+                        matrix.executeMovement(candidate, actualPlayer);                                   // We execute the movement.
+                        value = std::max(value, alphaBeta(depth - 1, alpha, beta, !actualPlayer, matrix)); // We search the maximun value for the current player.
                         alpha = std::max(alpha, value);
-                        if (alpha >= beta) // if we already found a better movement.
+                        if (alpha >= beta) // If we already found a better movement.
                         {
-                            pruning = true; // we dont need to keep analizing more posible states in this branch.
+                            pruning = true; // We dont need to keep analizing more posible states in this branch.
                         }
                         matrix.undoMovement(candidate); // We undo the movement.
                     }

@@ -111,29 +111,23 @@ namespace ttt
         {
             for (int j = 0; j < mHeight; j++)
             {
-               
-                actualGameState = checkAxisVictory(i , j , 1 , 0);    //Row control:  {i + 1 , j + 0}.
-
+                actualGameState = checkAxisVictory(i , j , 1 , 0);                     //Row control:  {i + 1 , j + 0}.
                 if (actualGameState == (int) GameStatesValues::theGameIsNotOverYet)    //Collumn  control: {i + 0 , j + 1}.
                 {
                     actualGameState = checkAxisVictory(i , j , 0 , 1);
                 }
-
                 if (actualGameState == (int) GameStatesValues::theGameIsNotOverYet)    //Increasing Diagonal {Q1  to  Q4}: {i + 1 , j - 1} with initial index correction: j + winCondition - 1 .
                 {
                     actualGameState = checkAxisVictory(i , j + mWinCondition -1 , 1, -1);
                 }
-
-                if (actualGameState== (int) GameStatesValues::theGameIsNotOverYet)     //Decreasing Diagonal {Q2 to Q4}: {i + 1 , j + 1}.
+                if (actualGameState == (int) GameStatesValues::theGameIsNotOverYet)     //Decreasing Diagonal {Q2 to Q4}: {i + 1 , j + 1}.
                 {
                     actualGameState = checkAxisVictory(i , j , 1, 1);
                 }
-
-                if (actualGameState != (int) GameStatesValues::theGameIsNotOverYet) // We found a victory!
+                if (actualGameState != (int) GameStatesValues::theGameIsNotOverYet)    // We found a victory!
                 {
                     return actualGameState;
                 }
-
                 if ((mMatrix[i][j]) == (int) TokenValues::emptyToken) // If we found at least one tile that isn't empty, then there is no tie yet!.
                 {
                     fullBoard = false;
