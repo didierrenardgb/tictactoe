@@ -68,20 +68,11 @@ namespace ttt
         return output;
     }
 
-
     bool AlgorithmMatrix::inRange(int i, int j , int iAddition , int jAddition)
     {
-        if (i+iAddition < mWidth && j+jAddition < mHeight)
+        if (i+iAddition < mWidth && j+jAddition < mHeight && ((jAddition>=0) || (jAddition<0 && j>0 && j<mHeight)))
         {
-            if (jAddition<0)
-            {
-                if (j>0 && j<mHeight)
-                {
-                    return true;
-                }
-                return false;
-            }
-            return true;
+           return true;
         }
         return false;
     }
@@ -155,13 +146,5 @@ namespace ttt
         }
         return (int) GameStatesValues::theGameIsNotOverYet; // If there is, at least, one tile empty, the game will be not over yet.
     }
-
-
-
-
-
-
-
-
 
 } // namespace ttt
