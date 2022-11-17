@@ -100,7 +100,7 @@ namespace ttt
         }
     }
 
-    static Coordinates play(Board const &board, AlgorithmMatrix & matrix) // Function that obtains the final move to make.
+    static Coordinates play(Board const &board, AlgorithmMatrix && matrix) // Function that obtains the final move to make.
     {
         Coordinates coords{0, 0};
         if (board.valid())
@@ -140,7 +140,7 @@ namespace ttt
     Coordinates PlayerExe::play(Board const &board) const
     {
         AlgorithmMatrix matrix(board, name());
-        return ttt::play(board, matrix);
+        return ttt::play(board, std::move(matrix));
     }
 
 } // namespace ttt
