@@ -5,20 +5,19 @@
 
 #include "PlayerFranL.h"
 #include "PlayerFede.h"
-#include "PlayerUnbeatable.h"
-#include "PlayerTor.h"
+//#include "PlayerUnbeatable.h"
+//#include "PlayerTor.h"
+#include "PlayerExe.h"
 
 namespace ttt
 {
+    void setupPlayers(std::unique_ptr<Competition> &forCompetition)
+    {
 
-void setupPlayers(std::unique_ptr<Competition> &forCompetition)
-{
-
-	// Add new players below:
-
-	forCompetition->addPlayer(std::make_unique<ttt::PlayerFranL>("[FRANLBOT] Frederik Franlebowitz"));
-	forCompetition->addPlayer(std::make_unique<ttt::PlayerFede>("[BOT] Fede"));
-    forCompetition->addPlayer(std::make_unique<ttt::PlayerErick>());
-}
-
+        // Add new players below:
+        forCompetition->addPlayer(std::make_unique<ttt::PlayerFranL>("[FRANLBOT] Frederik Franlebowitz"));
+        forCompetition->addPlayer(std::make_unique<ttt::PlayerFede>("[BOT] Fede"));
+        forCompetition->addPlayer(std::make_unique<ttt::PlayerExe>("[BOT] ExeA"));
+        forCompetition->addPlayer(std::make_unique<ttt::PlayerErick>());
+    }
 } // namespace
